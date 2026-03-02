@@ -44,8 +44,9 @@ const RootRedirect = () => {
     );
   }
 
-  // Direct users to the admin dashboard if logged in, otherwise send them to the voting portal
-  return user ? <Navigate to="/admin/" replace /> : <Navigate to="/vote" replace />;
+  // Direct all users to the administrative entry point.
+  // Logged-in admins see the dashboard; others are routed to the authentication portal.
+  return <Navigate to="/admin/" replace />;
 };
 
 const AdminTrailingSlash = () => {
