@@ -122,30 +122,37 @@ const AdminDashboard = () => {
     };
 
     const chartData = {
-        labels: activityData.length > 0 ? activityData.map(d => d.date) : ['No Activity'],
+        labels: activityData.length > 0 ? activityData.map(d => d.date) : ['Initial'],
         datasets: [
             {
                 fill: true,
-                label: 'Tokens Used',
+                label: 'Ballots Cast',
                 data: activityData.length > 0 ? activityData.map(d => d.used) : [0],
-                borderColor: '#1d4ed8', // blue-700
-                backgroundColor: 'rgba(37, 99, 235, 0.06)',
-                tension: 0.3,
-                borderWidth: 2,
-                pointRadius: 4,
-                pointBackgroundColor: '#1d4ed8',
+                borderColor: '#2563eb', // blue-600
+                backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                tension: 0.4,
+                borderWidth: 3,
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                pointBackgroundColor: '#2563eb',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
                 yAxisID: 'y',
             },
             {
                 fill: false,
                 label: 'Turnout %',
                 data: activityData.length > 0 ? activityData.map(d => Math.round(d.turnoutPct)) : [0],
-                borderColor: '#059669', // emerald-500
+                borderColor: '#10b981', // emerald-500
                 backgroundColor: 'transparent',
-                tension: 0.3,
-                borderWidth: 2,
-                pointRadius: 3,
-                pointBackgroundColor: '#059669',
+                tension: 0.4,
+                borderWidth: 3,
+                borderDash: [5, 5], // Dashed line for percentage
+                pointRadius: 4,
+                pointHoverRadius: 7,
+                pointBackgroundColor: '#10b981',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
                 yAxisID: 'y1',
             },
         ],
@@ -154,18 +161,78 @@ const AdminDashboard = () => {
     const chartOptions = {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                align: 'end',
+                labels: {
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    font: { size: 11, weight: '700' },
+                    padding: 20,
+                    color: '#1e293b'
+                }
+            },
+            tooltip: {
+                backgroundColor: '#0f172a',
+                padding: 12,
+                titleFont: { size: 13, weight: 'bold' },
+                bodyFont: { size: 12 },
+                cornerRadius: 8,
+                callbacks: {
+                    label: (context) => {
+                        let label = context.dataset.label || '';
+                        if (label) label += ': ';
+                        if (context.datasetIndex === 1) {
+                            label += `${context.parsed.y}%`;
+                        } else {
+                            label += `${context.parsed.y} tokens`;
+                        }
+                        return label;
+                    }
+                }
+            }
+        },
         scales: {
             y: {
                 beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'BALLOTS REDEEMED',
+                    font: { size: 9, weight: '900' },
+                    color: '#94a3b8',
+                    padding: { bottom: 10 }
+                },
                 grid: { color: '#f1f5f9' },
                 ticks: { stepSize: 1, color: '#64748b', font: { size: 10, weight: '600' } }
             },
-            x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10, weight: '600' } } },
+            x: {
+                grid: { display: false },
+                ticks: { color: '#64748b', font: { size: 10, weight: '600' } },
+                title: {
+                    display: true,
+                    text: 'EVENT TIMELINE',
+                    font: { size: 9, weight: '900' },
+                    color: '#94a3b8',
+                    padding: { top: 10 }
+                }
+            },
             y1: {
                 position: 'right',
                 beginAtZero: true,
                 max: 100,
+                title: {
+                    display: true,
+                    text: 'TURNOUT RATIO',
+                    font: { size: 9, weight: '900' },
+                    color: '#94a3b8',
+                    padding: { bottom: 10 }
+                },
                 grid: { drawOnChartArea: false },
                 ticks: { color: '#059669', font: { size: 10, weight: '600' }, callback: (v) => `${v}%` },
             },
