@@ -22,7 +22,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  // If you are logged in, you can access admin routes
+  // Authenticated users have access to administrative controls
   if (!user) {
     return <Navigate to="/login" replace />;
   }
@@ -44,7 +44,7 @@ const RootRedirect = () => {
     );
   }
 
-  // Final check: Send to admin if session exists, otherwise to public vote
+  // Direct users to the admin dashboard if logged in, otherwise send them to the voting portal
   return user ? <Navigate to="/admin/" replace /> : <Navigate to="/vote" replace />;
 };
 
@@ -52,7 +52,7 @@ const AdminTrailingSlash = () => {
   const location = useLocation();
   const { pathname, search, hash } = location;
 
-  // Normalize admin routes to always include a trailing slash.
+  // Ensure administrative URLs consistently include a trailing slash for route normalization.
   if (pathname.startsWith('/admin') && !pathname.endsWith('/')) {
     return <Navigate to={`${pathname}/${search}${hash}`} replace />;
   }
@@ -82,7 +82,7 @@ function App() {
         <AdminTrailingSlash />
         <div className="min-h-screen bg-transparent text-slate-100">
           <Routes>
-            {/* Public Voting Routes */}
+            {/* Public Voter Portal */}
             <Route path="/vote" element={<VoteEntry />} />
             <Route path="/ballot/:token" element={<PublicBallot />} />
 
@@ -112,7 +112,7 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* Token pasted into address bar */}
+            {/* Handling for direct URL access using a voting token */}
             <Route path="/:token" element={<TokenDeepLink />} />
 
             <Route path="/" element={<RootRedirect />} />

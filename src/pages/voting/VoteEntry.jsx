@@ -14,7 +14,7 @@ const VoteEntry = () => {
     const location = useLocation();
 
     const verifyToken = async (rawToken) => {
-        // Fast, single-step verification: token must exist in voting_tokens.
+        // Efficiently validate the provided token against the authorized registry.
         const normalizedToken = rawToken.trim().toUpperCase();
 
         const { data, error } = await supabase
@@ -46,7 +46,7 @@ const VoteEntry = () => {
         }
     };
 
-    // If a token is deep-linked via /vote?token=XXXX..., prefill and auto-verify.
+    // If a token is provided in the URL, automatically populate and verify it.
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const deepToken = params.get('token');

@@ -57,7 +57,7 @@ const ElectionManager = () => {
         if (isEditing && id) {
             fetchElectionDetails();
         } else {
-            // New election route: ensure we are not stuck in a loading state
+            // Initialize state for a new election entry to ensure the UI remains responsive.
             setLoading(false);
         }
     }, [isEditing, id]);
@@ -73,7 +73,7 @@ const ElectionManager = () => {
             setElection(data);
             setPositions(data.positions || []);
 
-            // Load current vote counts per candidate for this election
+            // Aggregate the total number of votes received by each candidate for this election.
             const { data: votes, error: votesError } = await supabase
                 .from('votes')
                 .select('candidate_id')
@@ -131,7 +131,7 @@ const ElectionManager = () => {
             if (error) throw error;
 
             toast.success(`${election.total_expected_voters} tokens generated successfully.`);
-            fetchElectionDetails(); // Refresh to update tokens_generated status
+            // Refresh current election details to update the generation status.
         } catch (err) {
             console.error('Generation error:', err);
             toast.error(err.message || 'Failed to generate tokens.');
@@ -209,8 +209,7 @@ const ElectionManager = () => {
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
             doc.text(
-                `Total tokens: ${tokens.length} • Generated for: ${
-                    election.total_expected_voters || 'N/A'
+                `Total tokens: ${tokens.length} • Generated for: ${election.total_expected_voters || 'N/A'
                 } voters`,
                 14,
                 24,
@@ -253,8 +252,8 @@ const ElectionManager = () => {
 
         setSaving(true);
         try {
-            // Require a valid admin organization context.
-            // AuthContext.ensureProfile is responsible for ensuring this exists.
+            // Ensure the administrator has a valid organizational context before proceeding.
+            // This verification is handled by the security layer.
             if (!profile?.organization_id) {
                 throw new Error('Your administrator profile is still syncing. Please wait 1–2 seconds and try again.');
             }
@@ -262,7 +261,7 @@ const ElectionManager = () => {
             const electionPayload = {
                 ...election,
                 organization_id: profile.organization_id,
-                // Ensure positions and candidates aren't in the payload
+                // Exclude related positions and candidates from the main payload for separate processing.
                 positions: undefined
             };
 
@@ -278,7 +277,7 @@ const ElectionManager = () => {
                 electionId = data.id;
             }
 
-            // Upsert positions and candidates
+            // Synchronize positions and candidates with the database.
             for (const pos of positions) {
                 const { data: posData, error: posError } = await supabase
                     .from('positions')
@@ -342,7 +341,7 @@ const ElectionManager = () => {
             </header>
 
             <main className="max-w-4xl mx-auto px-6 py-12 space-y-12">
-                {/* Token Management Section (only if editing) */}
+                {/* Token Issuance and Control */}
                 {isEditing && (
                     <Card className="border-blue-100 bg-blue-50/30 p-8 flex flex-col md:flex-row items-center justify-between gap-6">
                         <div className="flex items-center gap-4">
@@ -427,8 +426,8 @@ const ElectionManager = () => {
                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Notice</p>
                             <p className="text-xs text-slate-500 leading-relaxed italic">
                                 {election.tokens_generated
-                                    ? "Expected voters is locked because tokens have already been issued."
-                                    : "This value determines how many unique voting tokens will be generated."}
+                                    ? "Expected capacity is locked as tokens have already been distributed."
+                                    : "This number determines the quantity of unique voting credentials generated."}
                             </p>
                         </div>
                         <Input
@@ -527,7 +526,7 @@ const ElectionManager = () => {
                                     <UserPlus className="w-3.5 h-3.5" /> Add Candidate
                                 </Button>
 
-                                {/* Live Results for this position */}
+                                {/* Real-time Voting Progress */}
                                 {Object.keys(resultsByCandidate).length > 0 && (
                                     <div className="mt-6 pt-4 border-t border-slate-100">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">

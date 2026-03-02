@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Safety wrapper so auth calls can never hang the whole app UI forever.
+    // Implementation of a safeguard to ensure authentication requests do not indefinitely stall the user interface.
     const withTimeout = async (promise, label, ms = 8000) => {
         const timeout = new Promise((_, reject) =>
             setTimeout(() => reject(new Error(`${label} timed out`)), ms)
@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const fetchProfile = async (userId) => {
-        // Trace exactly when fetchProfile is invoked and with what input
+        // Monitor exactly when profile retrieval is triggered and identify the associated user.
         console.log('fetchProfile called with uid:', userId);
 
         if (!userId) {
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
                 .eq('id', userId)
                 .single();
 
-            // Raw Supabase response after the query runs
+            // Verify the information returned from the database.
             console.log('fetchProfile raw response:', { data, error });
 
             if (error) {
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
                 return null;
             }
 
-            // Value that downstream state will be set to
+            // Prepare the profile information to be used within the application.
             console.log('Setting profile to:', data);
             return data;
         } catch (err) {
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
     const ensureProfile = async (currentUser) => {
         if (!currentUser) return null;
 
-        // 1. Try to load any existing profile row
+        // 1. Attempt to retrieve any existing profile record.
         let profileData = await fetchProfile(currentUser.id);
 
         const metaOrgName = currentUser.user_metadata?.org_name;
@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }) => {
         const resolvedFullName = metaFullName || profileData?.full_name || 'Administrator';
         const fallbackOrgName = metaOrgName || 'Primary Organization';
 
-        // 2. If a profile exists but is missing an organization_id, repair it once
+        // 2. Automatically assign an organization to the profile if it is currently missing.
         if (profileData && !profileData.organization_id) {
             console.log('Auth: Repairing existing profile without organization_id...');
             try {
@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }) => {
             }
         }
 
-        // 3. If no profile exists at all, auto-create from metadata when possible
+        // 3. Automatically create a new profile if no existing record is found.
         if (!profileData) {
             console.log('Auth: Profile missing. Attempting auto-creation...');
             try {
@@ -137,6 +137,7 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         let isMounted = true;
 
+        // Synchronize local authentication state with the remote server.
         const syncAuth = async () => {
             try {
                 const { data: { session } } = await withTimeout(
@@ -148,7 +149,7 @@ export const AuthProvider = ({ children }) => {
                 const currentUser = session?.user ?? null;
                 setUser(currentUser);
 
-                // OPTIMIZATION: Try to load profile from sessionStorage for < 1s load
+                // OPTIMIZATION: Retrieve the profile from local storage for a faster initial load.
                 if (currentUser && typeof window !== 'undefined') {
                     const cached = window.sessionStorage.getItem('electionhub-profile');
                     if (cached) {
@@ -231,7 +232,7 @@ export const AuthProvider = ({ children }) => {
         };
     }, []);
 
-    // Log whenever core auth state changes so we can see propagation into context
+    // Log authentication status updates to ensure consistent state across the application.
     useEffect(() => {
         console.log('AuthContext state changed:', {
             user,
@@ -257,8 +258,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const signOut = async () => {
-        // Proactively clear client-side state so navigation and protected
-        // routes react immediately, without waiting on network round-trips.
+        // Promptly clear local user information to ensure an immediate transition.
         setUser(null);
         setProfile(null);
         try {

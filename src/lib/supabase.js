@@ -9,17 +9,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    // Always persist the session so a full-page refresh
-    // keeps admins and voters signed in.
+    // Preserve the user session to maintain login status after page reloads.
     persistSession: true,
-    // Re-enable auto refresh now that we override the lock mechanism below.
+    // Automatically renew authentication tokens to keep the session active.
     autoRefreshToken: true,
     detectSessionInUrl: true,
     storageKey: 'electionhub-auth-token', // Use a unique key
 
-    // CRITICAL: Override auth-js locking to avoid navigator.locks deadlocks and
-    // AbortError: "Lock broken by another request with the 'steal' option."
-    // This makes auth/session operations deterministic within a single tab.
+    // Securely manage concurrent authentication requests to ensure a smooth experience.
     //
     // Signature: (name, acquireTimeout, fn) => Promise
     lock: async (_name, _acquireTimeout, fn) => await fn()

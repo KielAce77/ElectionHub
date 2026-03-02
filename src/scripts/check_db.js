@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 const url = "VITE_SUPABASE_URL_HERE"; // Need to replace
 const key = "VITE_SUPABASE_ANON_KEY_HERE"; // Need to replace
 
-// This script will be run via node directly from the command line after I fill the keys.
+// Utility script designed for direct verification of profile records through the command line.
 const supabase = createClient(url, key);
 
 async function run() {

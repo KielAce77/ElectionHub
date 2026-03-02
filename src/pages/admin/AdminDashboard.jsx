@@ -75,8 +75,8 @@ const AdminDashboard = () => {
 
                     const effectiveStatus =
                         now < (start || now) ? 'upcoming' :
-                        end && now > end ? 'ended' :
-                        'active';
+                            end && now > end ? 'ended' :
+                                'active';
 
                     if (effectiveStatus === 'active') activeCount++;
 
@@ -177,9 +177,8 @@ const AdminDashboard = () => {
         navigate('/login', { replace: true });
     };
 
-    // Only block the entire screen while core auth is loading.
-    // Dashboard data now loads in the background so navigation
-    // between pages feels instant.
+    // Display a loading indicator during the initial authentication phase.
+    // Dashboard analytics will update in the background for a responsive experience.
     if (authLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -190,7 +189,7 @@ const AdminDashboard = () => {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            {/* Admin Nav */}
+            {/* Administrative Navigation */}
             <nav className="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-20">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-6">
@@ -252,7 +251,7 @@ const AdminDashboard = () => {
                     </div>
                 </header>
 
-                {/* Stats Grid */}
+                {/* Operational Statistics */}
                 <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                     {[
                         { label: 'Tokens Issued', value: stats.issuedTokens, icon: Ticket, trend: 'SECURE' },
@@ -312,8 +311,8 @@ const AdminDashboard = () => {
 
                                     const effectiveStatus =
                                         start && now < start ? 'upcoming' :
-                                        end && now > end ? 'ended' :
-                                        'active';
+                                            end && now > end ? 'ended' :
+                                                'active';
 
                                     return (
                                         <Card key={election.id} className="hover:bg-slate-50/50 transition-all p-6 flex flex-col sm:flex-row sm:items-center justify-between shadow-none border-slate-200 cursor-pointer gap-6" onClick={() => navigate(`/admin/elections/${election.id}`)}>
