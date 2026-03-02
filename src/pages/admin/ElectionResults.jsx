@@ -3,33 +3,42 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Card, Button, Badge, Logo } from '../../components/ui';
-import { Loader2, BarChart3, Activity, ArrowLeft } from 'lucide-react';
+import { Loader2, BarChart3, Activity, ArrowLeft, TrendingUp, Users, Award, Calendar } from 'lucide-react';
+import ResultsChart from '../../components/ResultsChart';
+import { motion } from 'framer-motion';
 
 const useQuery = () => {
   const { search } = useLocation();
   return useMemo(() => new URLSearchParams(search), [search]);
 };
 
-const CandidateRow = ({ rank, name, affiliation, votes, percentage }) => {
+const CandidateRow = ({ rank, name, affiliation, votes, percentage, isWinner }) => {
   return (
-    <div className="flex items-center gap-4 py-2 border-b last:border-b-0 border-slate-100">
-      <div className="w-6 text-xs font-black text-slate-400 text-right">{rank}</div>
+    <div className={`flex items-center gap-6 py-4 px-4 rounded-xl transition-all ${isWinner ? 'bg-blue-50/50 ring-1 ring-blue-100' : 'hover:bg-slate-50'}`}>
+      <div className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-black ${isWinner ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+        {rank}
+      </div>
       <div className="flex-1">
-        <p className="text-sm font-bold text-slate-900">{name || 'Unnamed candidate'}</p>
+        <div className="flex items-center gap-2">
+          <p className={`text-sm font-bold ${isWinner ? 'text-blue-900' : 'text-slate-900'}`}>{name || 'Unnamed candidate'}</p>
+          {isWinner && <Award className="w-4 h-4 text-blue-600" />}
+        </div>
         {affiliation && (
-          <p className="text-xs font-medium text-slate-400 mt-0.5">{affiliation}</p>
+          <p className="text-[11px] font-medium text-slate-500 mt-0.5 line-clamp-1 italic">"{affiliation}"</p>
         )}
-        <div className="mt-2 h-1.5 rounded-full bg-slate-100 overflow-hidden">
-          <div
-            className="h-full bg-blue-600 transition-all duration-500"
-            style={{ width: `${percentage}%` }}
+        <div className="mt-3 h-2 rounded-full bg-slate-100 overflow-hidden shadow-inner">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${percentage}%` }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            className={`h-full transition-all duration-500 ${isWinner ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/20' : 'bg-slate-400'}`}
           />
         </div>
       </div>
       <div className="w-24 text-right">
-        <p className="text-xs font-bold text-slate-900">{votes}</p>
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-          {percentage.toFixed(0)}%
+        <p className={`text-sm font-black ${isWinner ? 'text-blue-700' : 'text-slate-900'}`}>{votes.toLocaleString()}</p>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em]">
+          {percentage.toFixed(1)}%
         </p>
       </div>
     </div>
@@ -48,19 +57,13 @@ const ElectionResults = () => {
   useEffect(() => {
     if (authLoading) return;
     fetchResults();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, profile?.organization_id, query.get('electionId')]);
 
   const fetchResults = async () => {
     try {
       setLoading(true);
       const orgId = profile?.organization_id;
-      if (!orgId) {
-        setElection(null);
-        setPositions([]);
-        setVotesByCandidate({});
-        return;
-      }
+      if (!orgId) return;
 
       const requestedElectionId = query.get('electionId');
 
@@ -75,12 +78,7 @@ const ElectionResults = () => {
       const chosenElection =
         elections?.find((e) => e.id === requestedElectionId) || elections?.[0] || null;
 
-      if (!chosenElection) {
-        setElection(null);
-        setPositions([]);
-        setVotesByCandidate({});
-        return;
-      }
+      if (!chosenElection) return;
 
       setElection(chosenElection);
 
@@ -88,8 +86,7 @@ const ElectionResults = () => {
         await Promise.all([
           supabase
             .from('positions')
-            .select(
-              `
+            .select(`
               id,
               title,
               candidates (
@@ -97,8 +94,7 @@ const ElectionResults = () => {
                 full_name,
                 bio
               )
-            `,
-            )
+            `)
             .eq('election_id', chosenElection.id),
           supabase
             .from('votes')
@@ -129,166 +125,175 @@ const ElectionResults = () => {
   const turnoutPct = totalRegistered > 0 ? (totalVotesCast / totalRegistered) * 100 : 0;
 
   const computeStatus = () => {
-    if (!election) return 'No Election';
+    if (!election) return 'NONE';
     const now = new Date();
     const start = election.start_date ? new Date(election.start_date) : null;
     const end = election.end_date ? new Date(election.end_date) : null;
 
-    if (start && now < start) return 'Upcoming';
-    if (end && now > end) return 'Ended';
-    return 'Active';
+    if (start && now < start) return 'UPCOMING';
+    if (end && now > end) return 'ENDED';
+    return 'LIVE';
   };
 
   const effectiveStatus = computeStatus();
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <Loader2 className="w-10 h-10 text-blue-700 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Admin Nav */}
-      <nav className="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-20">
+    <div className="min-h-screen bg-slate-50 pb-20">
+      <nav className="bg-white/80 backdrop-blur-xl border-b border-slate-200 px-6 py-4 sticky top-0 z-30 transition-all">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-8">
             <button
               type="button"
               onClick={() => navigate('/admin')}
-              className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-xs font-bold uppercase tracking-widest"
+              className="flex items-center gap-2 text-slate-500 hover:text-blue-700 transition-colors font-black text-[10px] uppercase tracking-[0.2em]"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to Dashboard
+              Exit to Console
             </button>
-            <div className="flex items-center gap-3">
-              <div className="bg-slate-900 p-1.5 rounded-lg text-white">
+            <div className="hidden sm:flex items-center gap-3">
+              <div className="bg-slate-950 p-1.5 rounded-xl shadow-lg shadow-black/10">
                 <Logo className="w-5 h-5" iconClassName="w-3 h-3" />
               </div>
-              <span className="font-extrabold text-slate-900 tracking-tight text-xl uppercase">
-                Admin Console
-              </span>
+              <p className="text-sm font-black text-slate-950 tracking-tighter uppercase italic">Intelligence Portal v2.0</p>
             </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <Badge variant={effectiveStatus === 'LIVE' ? 'success' : 'neutral'} className="font-black tracking-[0.2em] px-4 py-1.5 text-[9px]">
+              ELECTION STATUS: {effectiveStatus}
+            </Badge>
           </div>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-6 py-10 space-y-10">
-        {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-end gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-[0.2em]">
-              <BarChart3 className="w-3.5 h-3.5" />
-              Election Analytics
+      <main className="max-w-6xl mx-auto px-6 pt-12 space-y-12">
+        <header className="flex flex-col md:flex-row justify-between items-end gap-8 pb-4 border-b border-slate-200">
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-100">
+              <Activity className="w-3 h-3" /> Audit-Ready Performance
             </div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight">Election Results</h1>
-            <p className="text-slate-500 font-medium">
-              {profile?.organizations?.name || user?.user_metadata?.org_name || 'Your Organization'}
+            <h1 className="text-5xl font-black text-slate-900 tracking-tight leading-none">
+              Real-time Results
+            </h1>
+            <p className="text-lg text-slate-500 font-medium">
+              Monitoring data for <span className="text-slate-900 font-bold underline decoration-indigo-500/20 underline-offset-4">{election?.title}</span>
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="success" className="uppercase tracking-widest text-[10px]">
-              Results Live
-            </Badge>
+          <div className="hidden lg:flex flex-col items-end gap-1">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Last synchronized</p>
+            <p className="text-xs font-bold text-slate-900">{new Date().toLocaleTimeString()} Today</p>
           </div>
         </header>
 
-        {/* Stats Grid */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[
-            { label: 'Total Registered Voters', value: totalRegistered },
-            { label: 'Total Votes Cast', value: totalVotesCast },
+            { label: 'Expected Voters', value: totalRegistered, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+            { label: 'Total Ballots', value: totalVotesCast, icon: BarChart3, color: 'text-indigo-600', bg: 'bg-indigo-50' },
             {
-              label: 'Turnout',
-              value: `${totalRegistered > 0 ? Math.round(turnoutPct) : 0}%`,
+              label: 'Voter Turnout',
+              value: `${totalRegistered > 0 ? turnoutPct.toFixed(1) : 0}%`,
+              icon: TrendingUp,
+              color: 'text-emerald-600',
+              bg: 'bg-emerald-50'
             },
-            { label: 'Election Status', value: effectiveStatus },
+            { label: 'Remaining Capacity', value: totalRegistered - totalVotesCast, icon: Calendar, color: 'text-orange-600', bg: 'bg-orange-50' },
           ].map((stat, idx) => (
-            <Card key={idx} className="flex flex-col justify-between p-6 shadow-none border-slate-200">
-              <div className="flex justify-between items-start mb-6">
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                  <Activity className="w-5 h-5 text-blue-700" />
-                </div>
+            <Card key={idx} className="p-6 border-slate-200/60 shadow-none hover:shadow-xl hover:shadow-slate-200/40 transition-all flex flex-col justify-between">
+              <div className={`${stat.bg} ${stat.color} w-10 h-10 rounded-xl flex items-center justify-center mb-6`}>
+                <stat.icon className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.1em]">
-                  {stat.label}
-                </p>
-                <p className="text-3xl font-black text-slate-900 mt-1 tabular-nums tracking-tighter">
-                  {stat.value}
-                </p>
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.15em] mb-1">{stat.label}</p>
+                <p className="text-3xl font-black text-slate-900 tracking-tighter tabular-nums">{stat.value.toLocaleString()}</p>
               </div>
             </Card>
           ))}
         </section>
 
-        {/* Turnout progress */}
-        <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-3">
-          <div className="flex justify-between items-center">
-            <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">
-              Turnout Progress
-            </p>
-            <p className="text-sm font-black text-slate-900">
-              {totalVotesCast}/{totalRegistered} voters
-            </p>
-          </div>
-          <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-            <div
-              className="h-full bg-blue-600 transition-all duration-700"
-              style={{ width: `${Math.min(turnoutPct, 100)}%` }}
-            />
+        <section className="bg-white border border-slate-200 rounded-3xl p-10 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-2 h-full bg-blue-600"></div>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div className="max-w-sm">
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2 uppercase">Participation Progress</h3>
+              <p className="text-sm text-slate-500 font-bold leading-relaxed">
+                Visualizing the distribution of {totalVotesCast.toLocaleString()} validated ballots out of {totalRegistered.toLocaleString()} expected credentials.
+              </p>
+            </div>
+            <div className="flex-1 max-w-md">
+              <div className="flex justify-between items-end mb-3">
+                <span className="text-4xl font-black text-slate-900">{Math.round(turnoutPct)}%</span>
+                <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{totalVotesCast} VALIDATED BALLOTS</span>
+              </div>
+              <div className="h-4 rounded-full bg-slate-100 overflow-hidden shadow-inner">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(turnoutPct, 100)}%` }}
+                  transition={{ duration: 1.5, ease: "anticipate" }}
+                  className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30"
+                />
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* Positions and Candidates */}
-        <section className="space-y-8">
+        <section className="space-y-16">
           {positions.map((position) => {
             const candidateTotals = position.candidates.map((c) => ({
-              ...c,
+              id: c.id,
+              name: c.full_name,
               votes: votesByCandidate[c.id] || 0,
+              bio: c.bio
             }));
             candidateTotals.sort((a, b) => b.votes - a.votes);
             const totalForPosition = candidateTotals.reduce((s, c) => s + c.votes, 0) || 1;
+            const winnerId = candidateTotals[0].votes > 0 ? candidateTotals[0].id : null;
 
             return (
-              <Card
-                key={position.id}
-                className="shadow-none border-slate-200 bg-white rounded-2xl p-8 space-y-6"
-              >
-                <div className="flex items-baseline justify-between">
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                      Position
-                    </p>
-                    <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">
-                      {position.title}
-                    </h3>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                      Total Votes
-                    </p>
-                    <p className="text-lg font-black text-slate-900">
-                      {candidateTotals.reduce((s, c) => s + c.votes, 0)}
-                    </p>
-                  </div>
+              <div key={position.id} className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <h2 className="text-xs font-black text-blue-700 bg-blue-50 px-4 py-1 rounded-full uppercase tracking-[0.3em]">
+                    Position Scope: {position.title}
+                  </h2>
+                  <div className="h-px bg-slate-200 flex-grow"></div>
                 </div>
 
-                <div className="space-y-2">
-                  {candidateTotals.map((cand, idx) => (
-                    <CandidateRow
-                      key={cand.id}
-                      rank={idx + 1}
-                      name={cand.full_name}
-                      affiliation={cand.bio}
-                      votes={cand.votes}
-                      percentage={(cand.votes / totalForPosition) * 100}
-                    />
-                  ))}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  <Card className="lg:col-span-2 p-8 shadow-none border-slate-200/80 bg-white rounded-3xl">
+                    <div className="flex items-center justify-between mb-8">
+                      <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Statistical Distribution</h4>
+                      <Badge variant="primary" className="text-[9px] font-black">LEAD: {candidateTotals[0].name.toUpperCase()}</Badge>
+                    </div>
+                    <ResultsChart results={candidateTotals} />
+                  </Card>
+
+                  <Card className="p-8 shadow-none border-slate-200/80 bg-white rounded-3xl overflow-hidden flex flex-col">
+                    <div className="mb-8">
+                      <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Certified Tally</h4>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Breakdown by percentage</p>
+                    </div>
+                    <div className="space-y-1 flex-grow overflow-y-auto pr-2 custom-scrollbar">
+                      {candidateTotals.map((cand, idx) => (
+                        <CandidateRow
+                          key={cand.id}
+                          rank={idx + 1}
+                          name={cand.name}
+                          affiliation={cand.bio}
+                          votes={cand.votes}
+                          percentage={(cand.votes / totalForPosition) * 100}
+                          isWinner={idx === 0 && cand.votes > 0}
+                        />
+                      ))}
+                    </div>
+                  </Card>
                 </div>
-              </Card>
+              </div>
             );
           })}
         </section>
