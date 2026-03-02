@@ -21,4 +21,13 @@ dist-ssr
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+# Environment variables
+.env
+.env.*
+
+# Database schema
+supabase_schema.sql
+
+# Temp files
+out.txt
+
