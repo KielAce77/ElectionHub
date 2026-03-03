@@ -117,6 +117,44 @@ const ElectionManager = () => {
         setPositions(newPositions);
     };
 
+    const handleCandidatePhotoUpload = async (posIndex, candIndex, file) => {
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please select a valid image file.');
+            return;
+        }
+
+        try {
+            const candidate = positions[posIndex].candidates[candIndex];
+            const safeName = (candidate.full_name || file.name).toLowerCase().replace(/[^\w\d]+/g, '-');
+            const path = `elections/${id || 'new'}/positions/${posIndex}/candidates/${candIndex}-${Date.now()}-${safeName}`;
+
+            const { data, error } = await supabase.storage
+                .from('candidate-photos')
+                .upload(path, file, { upsert: true });
+
+            if (error) throw error;
+
+            const { data: publicData } = supabase.storage
+                .from('candidate-photos')
+                .getPublicUrl(data.path);
+
+            const url = publicData?.publicUrl;
+            if (!url) {
+                toast.error('Could not get public URL for photo.');
+                return;
+            }
+
+            const updated = [...positions];
+            updated[posIndex].candidates[candIndex].photo_url = url;
+            setPositions(updated);
+            toast.success('Candidate photo uploaded.');
+        } catch (err) {
+            console.error('Photo upload error:', err);
+            toast.error('Failed to upload photo. Please try again.');
+        }
+    };
+
     const handleRemoveCandidate = (posIndex, candIndex) => {
         const newPositions = [...positions];
         newPositions[posIndex].candidates = newPositions[posIndex].candidates.filter((_, idx) => idx !== candIndex);
@@ -561,7 +599,7 @@ const ElectionManager = () => {
                                                 <ImageIcon className="w-5 h-5" />
                                             </div>
                                         </div>
-                                        <div className="md:col-span-11 grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+                                <div className="md:col-span-11 grid grid-cols-1 md:grid-cols-3 gap-6 relative">
                                             <Input
                                                 placeholder="Full Name"
                                                 value={cand.full_name}
@@ -572,16 +610,43 @@ const ElectionManager = () => {
                                                 }}
                                                 disabled={election.status === 'active' || election.status === 'closed'}
                                             />
-                                            <Input
-                                                placeholder="Photo URL"
-                                                value={cand.photo_url || ''}
-                                                onChange={(e) => {
-                                                    const newPositions = [...positions];
-                                                    newPositions[posIdx].candidates[candIdx].photo_url = e.target.value;
-                                                    setPositions(newPositions);
-                                                }}
-                                                disabled={election.status === 'active' || election.status === 'closed'}
-                                            />
+                                            <div className="space-y-2">
+                                                <p className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider">
+                                                    Candidate Photo
+                                                </p>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
+                                                        {cand.photo_url ? (
+                                                            <img
+                                                                src={cand.photo_url}
+                                                                alt={cand.full_name || 'Candidate photo'}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <UserPlus className="w-5 h-5 text-slate-400" />
+                                                        )}
+                                                    </div>
+                                                    <label className="inline-flex items-center px-3 py-2 rounded-md border border-slate-300 text-xs font-bold uppercase tracking-widest text-slate-700 bg-white hover:bg-slate-50 cursor-pointer disabled:opacity-50">
+                                                        <span>Upload Photo</span>
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            className="hidden"
+                                                            disabled={election.status === 'active' || election.status === 'closed'}
+                                                            onChange={(e) =>
+                                                                handleCandidatePhotoUpload(
+                                                                    posIdx,
+                                                                    candIdx,
+                                                                    e.target.files?.[0] || null
+                                                                )
+                                                            }
+                                                        />
+                                                    </label>
+                                                </div>
+                                                <p className="text-[10px] text-slate-400 font-medium">
+                                                    JPG or PNG, up to 2MB. This image will appear next to the candidate on the voting page.
+                                                </p>
+                                            </div>
                                             <div className="flex items-start gap-4">
                                                 <Input
                                                     placeholder="Credentials / Bio"
