@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -35,7 +35,9 @@ const ElectionManager = () => {
     const [showTokensModal, setShowTokensModal] = useState(false);
     const [tokens, setTokens] = useState([]);
     const [recentlyCopiedToken, setRecentlyCopiedToken] = useState(null);
+    const [recentlyCopiedLink, setRecentlyCopiedLink] = useState(false);
     const [resultsByCandidate, setResultsByCandidate] = useState({});
+    const positionsEndRef = useRef(null);
 
     const handleSignOutClick = async () => {
         await signOut();
@@ -99,6 +101,10 @@ const ElectionManager = () => {
 
     const handleAddPosition = () => {
         setPositions([...positions, { title: '', candidates: [{ full_name: '', bio: '', photo_url: '' }] }]);
+        // Delay scroll slightly to ensure DOM has updated
+        setTimeout(() => {
+            positionsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
     };
 
     const handleRemovePosition = (posIndex) => {
@@ -109,6 +115,24 @@ const ElectionManager = () => {
         const newPositions = [...positions];
         newPositions[posIndex].candidates.push({ full_name: '', bio: '', photo_url: '' });
         setPositions(newPositions);
+    };
+
+    const handleRemoveCandidate = (posIndex, candIndex) => {
+        const newPositions = [...positions];
+        newPositions[posIndex].candidates = newPositions[posIndex].candidates.filter((_, idx) => idx !== candIndex);
+        setPositions(newPositions);
+    };
+
+    const handleCopyVotingLink = async () => {
+        const link = `${window.location.origin}/vote`;
+        try {
+            await navigator.clipboard.writeText(link);
+            setRecentlyCopiedLink(true);
+            toast.success('Voting link copied to clipboard');
+            setTimeout(() => setRecentlyCopiedLink(false), 3000);
+        } catch (err) {
+            toast.error('Failed to copy link.');
+        }
     };
 
     const handleGenerateTokens = async () => {
@@ -343,60 +367,89 @@ const ElectionManager = () => {
             <main className="max-w-4xl mx-auto px-6 py-12 space-y-12">
                 {/* Token Issuance and Control */}
                 {isEditing && (
-                    <Card className="border-blue-100 bg-blue-50/30 p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
-                                <Ticket className="w-6 h-6 text-white" />
-                            </div>
-                            <div>
-                                <h3 className="font-black text-slate-900 uppercase tracking-tight">Token Management</h3>
-                                <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">
-                                    {election.tokens_generated ? 'Tokens have been securely generated' : 'Tokens not yet generated'}
-                                </p>
-                            </div>
-                        </div>
-
-                        {!election.tokens_generated ? (
+                    <div className="space-y-6">
+                        <Card className="border-blue-100 bg-blue-50/30 p-8 flex flex-col md:flex-row items-center justify-between gap-6">
                             <div className="flex items-center gap-4">
-                                <div className="text-right hidden sm:block">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ready to generate</p>
-                                    <p className="text-sm font-black text-blue-700">{election.total_expected_voters} Unique Keys</p>
+                                <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
+                                    <Ticket className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="font-black text-slate-900 uppercase tracking-tight">Token Management</h3>
+                                    <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">
+                                        {election.tokens_generated ? 'Tokens have been securely generated' : 'Tokens not yet generated'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {!election.tokens_generated ? (
+                                <div className="flex items-center gap-4">
+                                    <div className="text-right hidden sm:block">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ready to generate</p>
+                                        <p className="text-sm font-black text-blue-700">{election.total_expected_voters} Unique Keys</p>
+                                    </div>
+                                    <Button
+                                        onClick={handleGenerateTokens}
+                                        disabled={generating || election.total_expected_voters <= 0}
+                                        className="bg-blue-600 hover:bg-blue-700 gap-2 shadow-blue-600/20"
+                                    >
+                                        {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                        Generate Tokens
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col sm:flex-row items-center gap-4">
+                                    <Badge variant="success" className="h-10 px-6 text-xs tracking-widest">
+                                        {election.total_expected_voters} TOKENS ACTIVE
+                                    </Badge>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        disabled={tokensLoading}
+                                        onClick={handleLoadTokens}
+                                        className="gap-2 font-bold text-[11px] uppercase tracking-widest"
+                                    >
+                                        {tokensLoading ? (
+                                            <>
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading Tokens...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Ticket className="w-3.5 h-3.5" /> View Tokens
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            )}
+                        </Card>
+
+                        {/* Share Voting Link Section */}
+                        <Card className="border-slate-200 bg-white p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                                    <Send className="w-5 h-5 text-slate-600" />
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Voting Portal Link</h4>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Share this link with your voters</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 w-full md:w-auto">
+                                <div className="flex-grow bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-xs font-mono text-slate-500 truncate max-w-[200px] md:max-w-xs">
+                                    {window.location.origin}/vote
                                 </div>
                                 <Button
-                                    onClick={handleGenerateTokens}
-                                    disabled={generating || election.total_expected_voters <= 0}
-                                    className="bg-blue-600 hover:bg-blue-700 gap-2 shadow-blue-600/20"
-                                >
-                                    {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                                    Generate Tokens
-                                </Button>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col sm:flex-row items-center gap-4">
-                                <Badge variant="success" className="h-10 px-6 text-xs tracking-widest">
-                                    {election.total_expected_voters} TOKENS ACTIVE
-                                </Badge>
-                                <Button
-                                    type="button"
                                     variant="secondary"
                                     size="sm"
-                                    disabled={tokensLoading}
-                                    onClick={handleLoadTokens}
-                                    className="gap-2 font-bold text-[11px] uppercase tracking-widest"
+                                    onClick={handleCopyVotingLink}
+                                    className="gap-2 shrink-0 h-9 font-bold text-[10px] uppercase tracking-widest"
                                 >
-                                    {tokensLoading ? (
-                                        <>
-                                            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading Tokens...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Ticket className="w-3.5 h-3.5" /> View Tokens
-                                        </>
-                                    )}
+                                    {recentlyCopiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                                    {recentlyCopiedLink ? 'Copied' : 'Copy Link'}
                                 </Button>
                             </div>
-                        )}
-                    </Card>
+                        </Card>
+                    </div>
                 )}
 
                 <Card className="shadow-none border-slate-200 p-8 space-y-8">
@@ -500,7 +553,7 @@ const ElectionManager = () => {
                                                 <ImageIcon className="w-5 h-5" />
                                             </div>
                                         </div>
-                                        <div className="md:col-span-11 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="md:col-span-11 grid grid-cols-1 md:grid-cols-2 gap-6 relative">
                                             <Input
                                                 placeholder="Candidate Full Name"
                                                 value={cand.full_name}
@@ -510,15 +563,26 @@ const ElectionManager = () => {
                                                     setPositions(newPositions);
                                                 }}
                                             />
-                                            <Input
-                                                placeholder="Brief Bio / Credentials"
-                                                value={cand.bio}
-                                                onChange={(e) => {
-                                                    const newPositions = [...positions];
-                                                    newPositions[posIdx].candidates[candIdx].bio = e.target.value;
-                                                    setPositions(newPositions);
-                                                }}
-                                            />
+                                            <div className="flex items-start gap-4">
+                                                <Input
+                                                    placeholder="Brief Bio / Credentials"
+                                                    value={cand.bio}
+                                                    onChange={(e) => {
+                                                        const newPositions = [...positions];
+                                                        newPositions[posIdx].candidates[candIdx].bio = e.target.value;
+                                                        setPositions(newPositions);
+                                                    }}
+                                                    className="flex-grow"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveCandidate(posIdx, candIdx)}
+                                                    className="mt-4 p-2 text-slate-300 hover:text-red-500 transition-colors"
+                                                    title="Remove Candidate"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -553,6 +617,7 @@ const ElectionManager = () => {
                             </div>
                         </Card>
                     ))}
+                    <div ref={positionsEndRef} />
                 </div>
             </main>
 
