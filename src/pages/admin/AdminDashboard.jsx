@@ -401,6 +401,18 @@ const AdminDashboard = () => {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3">
+                                                <Button
+                                                    variant="secondary"
+                                                    size="sm"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/admin/results/${election.id}`);
+                                                    }}
+                                                    className="h-9 w-9 p-0 flex items-center justify-center rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                                                    title="View Results"
+                                                >
+                                                    <BarChart3 className="w-4 h-4" />
+                                                </Button>
                                                 <Badge variant={effectiveStatus === 'active' ? 'success' : 'neutral'}>
                                                     {effectiveStatus.toUpperCase()}
                                                 </Badge>

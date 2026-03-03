@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Card, Button, Badge, Logo } from '../../components/ui';
@@ -46,6 +46,7 @@ const CandidateRow = ({ rank, name, affiliation, votes, percentage, isWinner }) 
 };
 
 const ElectionResults = () => {
+  const { electionId } = useParams();
   const { profile, user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [election, setElection] = useState(null);
@@ -57,7 +58,7 @@ const ElectionResults = () => {
   useEffect(() => {
     if (authLoading) return;
     fetchResults();
-  }, [authLoading, profile?.organization_id, query.get('electionId')]);
+  }, [authLoading, profile?.organization_id, electionId, query.get('electionId')]);
 
   const fetchResults = async () => {
     try {
@@ -65,7 +66,7 @@ const ElectionResults = () => {
       const orgId = profile?.organization_id;
       if (!orgId) return;
 
-      const requestedElectionId = query.get('electionId');
+      const requestedElectionId = electionId || query.get('electionId');
 
       const { data: elections, error: electionsError } = await supabase
         .from('elections')

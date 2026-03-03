@@ -8,6 +8,7 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import VoteEntry from './pages/voting/VoteEntry';
 import PublicBallot from './pages/voting/PublicBallot';
+import PublicResults from './pages/voting/PublicResults';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ElectionManager from './pages/admin/ElectionManager';
 import ElectionResults from './pages/admin/ElectionResults';
@@ -88,6 +89,7 @@ function App() {
             {/* Public Voter Portal */}
             <Route path="/vote" element={<VoteEntry />} />
             <Route path="/ballot/:token" element={<PublicBallot />} />
+            <Route path="/results/:electionId" element={<PublicResults />} />
 
             {/* Admin Auth Routes */}
             <Route path="/login" element={<Login />} />
@@ -102,6 +104,11 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path="/admin/results/" element={
+              <ProtectedRoute>
+                <ElectionResults />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/results/:electionId" element={
               <ProtectedRoute>
                 <ElectionResults />
               </ProtectedRoute>
