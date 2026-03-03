@@ -295,6 +295,17 @@ export const AuthProvider = ({ children }) => {
         return data;
     };
 
+    const verifyRecoveryOtp = async (email, token) => {
+        // Verify the 6-digit code sent to the user's email.
+        const { data, error } = await supabase.auth.verifyOtp({
+            email,
+            token,
+            type: 'recovery'
+        });
+        if (error) throw error;
+        return data;
+    };
+
     const contextValue = {
         user,
         profile,
@@ -304,7 +315,8 @@ export const AuthProvider = ({ children }) => {
         signUp,
         signOut,
         resetPassword,
-        updatePassword
+        updatePassword,
+        verifyRecoveryOtp
     };
     console.log('AuthProvider context value:', contextValue);
 
