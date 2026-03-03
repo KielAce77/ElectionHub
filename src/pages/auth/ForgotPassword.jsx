@@ -141,10 +141,10 @@ const ForgotPassword = () => {
 
                             <form onSubmit={handleVerifyOtp} className="space-y-8">
                                 <Input
-                                    label="8-Digit Security Token"
+                                    label="6-Digit Security Token"
                                     type="text"
-                                    placeholder="XXXXXXXX"
-                                    maxLength={8}
+                                    placeholder="XXXXXX"
+                                    maxLength={6}
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                                     disabled={loading}
