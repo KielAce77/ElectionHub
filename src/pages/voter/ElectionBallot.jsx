@@ -176,44 +176,48 @@ const ElectionBallot = () => {
                                             onClick={() => handleSelect(position.id, candidate.id)}
                                             className="cursor-pointer group"
                                         >
-                                            <Card className={`relative h-full overflow-hidden border-none bg-slate-900/40 hover:bg-slate-900/60 ring-1 transition-all duration-300 ${isSelected ? 'ring-blue-500 shadow-[0_20px_60px_-15px_rgba(59,130,246,0.3)]' : 'ring-white/5 hover:ring-white/20 shadow-none'}`}>
+                                            <Card className={`relative h-full overflow-hidden border-none bg-slate-900/40 hover:bg-slate-900/60 ring-1 transition-all duration-300 ${isSelected ? 'ring-blue-500 bg-blue-500/5 shadow-[0_20px_60px_-15px_rgba(59,130,246,0.3)]' : 'ring-white/5 hover:ring-white/20'}`}>
 
-                                                <div className="relative aspect-[4/5] overflow-hidden bg-slate-950">
-                                                    {candidate.photo_url ? (
-                                                        <img src={candidate.photo_url} alt={candidate.full_name} className={`w-full h-full object-cover transition-transform duration-1000 ${isSelected ? 'scale-110' : 'group-hover:scale-105'}`} />
-                                                    ) : (
-                                                        <div className="w-full h-full flex flex-col items-center justify-center opacity-20">
-                                                            <User className="w-16 h-16" />
-                                                            <span className="text-[10px] uppercase font-black tracking-widest mt-4">Profile Missing</span>
+                                                <div className="p-8 flex flex-col items-center text-center space-y-6">
+                                                    {/* Radio Button Style Indicator */}
+                                                    <div className="absolute top-6 left-6">
+                                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'border-blue-500 bg-blue-500' : 'border-white/20'}`}>
+                                                            {isSelected && <Check className="w-3 h-3 text-white stroke-[4]" />}
                                                         </div>
-                                                    )}
-
-                                                    {/* Overlays */}
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none" />
-                                                    {isSelected && <div className="absolute inset-0 bg-blue-500/10 mix-blend-color" />}
-
-                                                    {/* Selection Marker */}
-                                                    <AnimatePresence>
-                                                        {isSelected && (
-                                                            <motion.div
-                                                                initial={{ scale: 0, rotate: -20 }}
-                                                                animate={{ scale: 1, rotate: 0 }}
-                                                                className="absolute top-6 right-6 bg-blue-500 text-white rounded-full p-2.5 shadow-2xl ring-4 ring-slate-950"
-                                                            >
-                                                                <Check className="w-5 h-5 stroke-[4]" />
-                                                            </motion.div>
-                                                        )}
-                                                    </AnimatePresence>
-                                                </div>
-
-                                                <div className="p-8 space-y-4">
-                                                    <div>
-                                                        <h4 className="text-xl font-black text-white tracking-tight uppercase group-hover:text-blue-400 transition-colors">{candidate.full_name}</h4>
-                                                        <div className="h-0.5 w-8 bg-blue-500 mt-3 group-hover:w-full transition-all duration-500" />
                                                     </div>
-                                                    <p className="text-sm text-slate-400 font-medium leading-relaxed italic opacity-80 h-20 line-clamp-3 overflow-hidden">
-                                                        "{candidate.bio || 'Credentials under organizational review.'}"
-                                                    </p>
+
+                                                    {/* Candidate Photo / Circle */}
+                                                    <div className="relative">
+                                                        <div className={`w-32 h-32 rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 ${isSelected ? 'ring-4 ring-blue-500 scale-105' : 'ring-1 ring-white/10 group-hover:scale-105'}`}>
+                                                            {candidate.photo_url ? (
+                                                                <img
+                                                                    src={candidate.photo_url}
+                                                                    alt={candidate.full_name}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                                                                    <span className="text-4xl font-black text-white opacity-20">
+                                                                        {candidate.full_name?.charAt(0).toUpperCase()}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Name & Bio */}
+                                                    <div className="space-y-3">
+                                                        <h4 className="text-2xl font-black text-white tracking-tight uppercase group-hover:text-blue-400 transition-colors">
+                                                            {candidate.full_name}
+                                                        </h4>
+                                                        <p className="text-sm text-slate-400 font-medium leading-relaxed italic opacity-80 h-20 line-clamp-3 overflow-hidden">
+                                                            "{candidate.bio || 'Credentials under organizational review.'}"
+                                                        </p>
+                                                    </div>
+
+                                                    <button className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.4em] transition-all ${isSelected ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-white/5 text-slate-400 group-hover:bg-white/10'}`}>
+                                                        {isSelected ? 'Mandate Verified' : 'Select Candidate'}
+                                                    </button>
                                                 </div>
                                             </Card>
                                         </motion.div>

@@ -205,68 +205,58 @@ const PublicBallot = () => {
                                     return (
                                         <motion.div
                                             key={candidate.id}
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
+                                            whileHover={{ y: -5 }}
+                                            transition={{ type: "spring", stiffness: 300 }}
+                                            onClick={() => handleSelect(position.id, candidate.id)}
+                                            className="cursor-pointer group"
                                         >
-                                            <Card
-                                                onClick={() => handleSelect(position.id, candidate.id)}
-                                                className={`group relative overflow-hidden transition-all duration-500 cursor-pointer border-none shadow-none h-full bg-slate-900/40 hover:bg-slate-900/60 ring-1 ${isSelected ? 'ring-blue-500' : 'ring-white/5 hover:ring-white/10'}`}
-                                            >
-                                                {/* Candidate Image with Overlay */}
-                                                <div className="relative aspect-[4/5] overflow-hidden">
-                                                    {candidate.photo_url ? (
-                                                        <img
-                                                            src={candidate.photo_url}
-                                                            alt={candidate.full_name}
-                                                            className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isSelected ? 'scale-110' : ''}`}
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-full bg-slate-950 flex flex-col items-center justify-center gap-4">
-                                                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center">
-                                                                <User className="w-8 h-8 text-slate-700" />
-                                                            </div>
-                                                            <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Image Unavailable</span>
+                                            <Card className={`relative h-full overflow-hidden border-none bg-slate-900/40 hover:bg-slate-900/60 ring-1 transition-all duration-300 ${isSelected ? 'ring-blue-500 bg-blue-500/5' : 'ring-white/5 hover:ring-white/20'}`}>
+
+                                                <div className="p-8 flex flex-col items-center text-center space-y-6">
+                                                    {/* Radio Button Style Indicator */}
+                                                    <div className="absolute top-6 left-6">
+                                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'border-blue-500 bg-blue-500' : 'border-white/20'}`}>
+                                                            {isSelected && <Check className="w-3 h-3 text-white stroke-[4]" />}
                                                         </div>
-                                                    )}
+                                                    </div>
 
-                                                    {/* Selection Glow */}
-                                                    <AnimatePresence>
+                                                    {/* Candidate Photo / Circle */}
+                                                    <div className="relative">
+                                                        <div className={`w-32 h-32 rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 ${isSelected ? 'ring-4 ring-blue-500' : 'ring-1 ring-white/10'}`}>
+                                                            {candidate.photo_url ? (
+                                                                <img
+                                                                    src={candidate.photo_url}
+                                                                    alt={candidate.full_name}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                                                                    <span className="text-4xl font-black text-white opacity-20">
+                                                                        {candidate.full_name?.charAt(0).toUpperCase()}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                         {isSelected && (
-                                                            <motion.div
-                                                                initial={{ opacity: 0 }}
-                                                                animate={{ opacity: 1 }}
-                                                                exit={{ opacity: 0 }}
-                                                                className="absolute inset-0 bg-blue-500/20 mix-blend-overlay border-[6px] border-blue-500"
-                                                            />
-                                                        )}
-                                                    </AnimatePresence>
-
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0c10] via-transparent to-transparent pointer-events-none" />
-
-                                                    {/* Floating Badge */}
-                                                    <div className="absolute top-4 right-4">
-                                                        {isSelected && (
-                                                            <motion.div
-                                                                initial={{ scale: 0, rotate: -20 }}
-                                                                animate={{ scale: 1, rotate: 0 }}
-                                                                className="bg-blue-500 text-white rounded-full p-2 shadow-2xl shadow-blue-500/50 ring-4 ring-slate-950"
-                                                            >
-                                                                <Check className="w-6 h-6 stroke-[4]" />
-                                                            </motion.div>
+                                                            <div className="absolute -bottom-2 -right-2 bg-blue-500 text-white rounded-lg px-2 py-1 text-[8px] font-black uppercase tracking-widest shadow-xl">
+                                                                Selected
+                                                            </div>
                                                         )}
                                                     </div>
-                                                </div>
 
-                                                <div className="p-8 space-y-4">
-                                                    <div>
+                                                    {/* Name & Bio */}
+                                                    <div className="space-y-3">
                                                         <h4 className="text-2xl font-black text-white tracking-tight uppercase group-hover:text-blue-400 transition-colors">
                                                             {candidate.full_name}
                                                         </h4>
-                                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Official Candidate</p>
+                                                        <p className="text-xs text-slate-400 font-medium leading-relaxed italic opacity-80 line-clamp-2 max-w-[200px]">
+                                                            "{candidate.bio || 'Formal mandate pending.'}"
+                                                        </p>
                                                     </div>
-                                                    <p className="text-sm text-slate-400 font-medium leading-relaxed italic opacity-80 line-clamp-3 group-hover:opacity-100 transition-opacity">
-                                                        "{candidate.bio || 'Formal statement pending.'}"
-                                                    </p>
+
+                                                    <button className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${isSelected ? 'bg-blue-600 text-white' : 'bg-white/5 text-slate-400 group-hover:bg-white/10'}`}>
+                                                        {isSelected ? 'Candidate Selected' : 'Choose Candidate'}
+                                                    </button>
                                                 </div>
                                             </Card>
                                         </motion.div>

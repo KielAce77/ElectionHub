@@ -592,91 +592,102 @@ const ElectionManager = () => {
                                     List of Candidates
                                     <span className="h-[1px] bg-slate-100 flex-grow"></span>
                                 </p>
-                                {pos.candidates.map((cand, candIdx) => (
-                                    <div key={candIdx} className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start pb-6 border-b border-slate-50 last:border-0 last:pb-0">
-                                        <div className="md:col-span-1 pt-1">
-                                            <div className="w-10 h-10 rounded-md bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100">
-                                                <ImageIcon className="w-5 h-5" />
-                                            </div>
-                                        </div>
-                                <div className="md:col-span-11 grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-                                            <Input
-                                                placeholder="Full Name"
-                                                value={cand.full_name}
-                                                onChange={(e) => {
-                                                    const newPositions = [...positions];
-                                                    newPositions[posIdx].candidates[candIdx].full_name = e.target.value;
-                                                    setPositions(newPositions);
-                                                }}
-                                                disabled={election.status === 'active' || election.status === 'closed'}
-                                            />
-                                            <div className="space-y-2">
-                                                <p className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider">
-                                                    Candidate Photo
-                                                </p>
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
-                                                        {cand.photo_url ? (
-                                                            <img
-                                                                src={cand.photo_url}
-                                                                alt={cand.full_name || 'Candidate photo'}
-                                                                className="w-full h-full object-cover"
+                                <div className="space-y-4">
+                                    {pos.candidates.map((cand, candIdx) => (
+                                        <div key={candIdx} className="relative group bg-slate-50/50 rounded-2xl p-6 border border-slate-100 transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50">
+                                            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                                                {/* Left: Candidate Photo Preview/Upload */}
+                                                <div className="md:col-span-3 lg:col-span-2">
+                                                    <div className="flex flex-col items-center gap-3">
+                                                        <div className="relative w-24 h-24 rounded-2xl bg-white shadow-inner flex items-center justify-center overflow-hidden border border-slate-200">
+                                                            {cand.photo_url ? (
+                                                                <img
+                                                                    src={cand.photo_url}
+                                                                    alt={cand.full_name || 'Candidate'}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <ImageIcon className="w-8 h-8 text-slate-200" />
+                                                            )}
+                                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors pointer-events-none" />
+                                                        </div>
+                                                        <label className="w-full">
+                                                            <div className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-[0.1em] py-2 px-3 rounded-lg text-center cursor-pointer transition-all shadow-lg shadow-blue-600/20 active:scale-95">
+                                                                Upload Photo
+                                                            </div>
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                className="hidden"
+                                                                disabled={election.status === 'active' || election.status === 'closed'}
+                                                                onChange={(e) =>
+                                                                    handleCandidatePhotoUpload(
+                                                                        posIdx,
+                                                                        candIdx,
+                                                                        e.target.files?.[0] || null
+                                                                    )
+                                                                }
                                                             />
-                                                        ) : (
-                                                            <UserPlus className="w-5 h-5 text-slate-400" />
-                                                        )}
+                                                        </label>
                                                     </div>
-                                                    <label className="inline-flex items-center px-3 py-2 rounded-md border border-slate-300 text-xs font-bold uppercase tracking-widest text-slate-700 bg-white hover:bg-slate-50 cursor-pointer disabled:opacity-50">
-                                                        <span>Upload Photo</span>
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            className="hidden"
-                                                            disabled={election.status === 'active' || election.status === 'closed'}
-                                                            onChange={(e) =>
-                                                                handleCandidatePhotoUpload(
-                                                                    posIdx,
-                                                                    candIdx,
-                                                                    e.target.files?.[0] || null
-                                                                )
-                                                            }
-                                                        />
-                                                    </label>
                                                 </div>
-                                                <p className="text-[10px] text-slate-400 font-medium">
-                                                    JPG or PNG, up to 2MB. This image will appear next to the candidate on the voting page.
-                                                </p>
-                                            </div>
-                                            <div className="flex items-start gap-4">
-                                                <Input
-                                                    placeholder="Credentials / Bio"
-                                                    value={cand.bio}
-                                                    onChange={(e) => {
-                                                        const newPositions = [...positions];
-                                                        newPositions[posIdx].candidates[candIdx].bio = e.target.value;
-                                                        setPositions(newPositions);
-                                                    }}
-                                                    disabled={election.status === 'active' || election.status === 'closed'}
-                                                    className="flex-grow"
-                                                />
-                                                {(election.status !== 'active' && election.status !== 'closed') && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveCandidate(posIdx, candIdx)}
-                                                        className="mt-4 p-2 text-slate-300 hover:text-red-500 transition-colors"
-                                                        title="Remove Candidate"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                )}
+
+                                                {/* Middle: Name & Bio Inputs */}
+                                                <div className="md:col-span-8 lg:col-span-9 space-y-4">
+                                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                                        <Input
+                                                            label="Full Name"
+                                                            placeholder="Enter name..."
+                                                            value={cand.full_name}
+                                                            onChange={(e) => {
+                                                                const newPositions = [...positions];
+                                                                newPositions[posIdx].candidates[candIdx].full_name = e.target.value;
+                                                                setPositions(newPositions);
+                                                            }}
+                                                            disabled={election.status === 'active' || election.status === 'closed'}
+                                                        />
+                                                        <Input
+                                                            label="Credentials / Bio"
+                                                            placeholder="Short description..."
+                                                            value={cand.bio}
+                                                            onChange={(e) => {
+                                                                const newPositions = [...positions];
+                                                                newPositions[posIdx].candidates[candIdx].bio = e.target.value;
+                                                                setPositions(newPositions);
+                                                            }}
+                                                            disabled={election.status === 'active' || election.status === 'closed'}
+                                                        />
+                                                    </div>
+                                                    <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                                                        * Photo Tip: Use a professional square image (Max 2MB)
+                                                    </p>
+                                                </div>
+
+                                                {/* Right: Actions */}
+                                                <div className="md:col-span-1 lg:col-span-1 flex justify-end">
+                                                    {(election.status !== 'active' && election.status !== 'closed') && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveCandidate(posIdx, candIdx)}
+                                                            className="p-3 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all"
+                                                            title="Remove Candidate"
+                                                        >
+                                                            <Trash2 className="w-5 h-5" />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
+
                                 {election.status !== 'active' && election.status !== 'closed' && (
-                                    <Button variant="ghost" size="sm" onClick={() => handleAddCandidate(posIdx)} className="text-blue-700 hover:bg-blue-50 font-bold gap-2 text-[11px] uppercase tracking-wider">
-                                        <UserPlus className="w-3.5 h-3.5" /> Add Candidate
-                                    </Button>
+                                    <button
+                                        onClick={() => handleAddCandidate(posIdx)}
+                                        className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 hover:text-blue-600 hover:border-blue-600 hover:bg-blue-50/50 transition-all font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3"
+                                    >
+                                        <UserPlus className="w-4 h-4" /> Add New Candidate
+                                    </button>
                                 )}
 
                                 {/* Real-time Voting Progress */}
