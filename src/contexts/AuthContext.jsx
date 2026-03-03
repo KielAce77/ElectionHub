@@ -277,7 +277,35 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const contextValue = { user, profile, authLoading: loading, loading, signIn, signUp, signOut };
+    const resetPassword = async (email) => {
+        // Send a recovery link to the user's email address.
+        const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        return data;
+    };
+
+    const updatePassword = async (newPassword) => {
+        // Apply the new password to the currently authenticated user session.
+        const { data, error } = await supabase.auth.updateUser({
+            password: newPassword
+        });
+        if (error) throw error;
+        return data;
+    };
+
+    const contextValue = {
+        user,
+        profile,
+        authLoading: loading,
+        loading,
+        signIn,
+        signUp,
+        signOut,
+        resetPassword,
+        updatePassword
+    };
     console.log('AuthProvider context value:', contextValue);
 
     return (

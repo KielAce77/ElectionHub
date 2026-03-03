@@ -1,6 +1,7 @@
+import React, { useState } from 'react';
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { Vote } from "lucide-react";
+import { Vote, Eye, EyeOff } from "lucide-react";
 
 export function cn(...inputs) {
     return twMerge(clsx(inputs));
@@ -45,19 +46,43 @@ export const Button = ({ className, variant = "primary", size = "md", children, 
     );
 };
 
-export const Input = ({ className, label, error, ...props }) => {
+export const Input = ({ className, label, error, type, ...props }) => {
+    const [showPassword, setShowPassword] = useState(false);
+    const isPassword = type === 'password';
+
     return (
-        <div className="w-full space-y-2">
-            {label && <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wider text-[11px]">{label}</label>}
-            <input
-                className={cn(
-                    "w-full bg-white border border-slate-300 rounded-md px-4 py-2.5 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all placeholder:text-slate-400",
-                    error && "border-red-500 focus:ring-red-500/10 focus:border-red-500",
-                    className
+        <div className="w-full space-y-2 text-left">
+            {label && (
+                <label className="block text-sm font-black text-slate-400 uppercase tracking-widest text-[10px]">
+                    {label}
+                </label>
+            )}
+            <div className="relative group">
+                <input
+                    type={isPassword ? (showPassword ? 'text' : 'password') : type}
+                    className={cn(
+                        "w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-900 text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 focus:bg-white transition-all placeholder:text-slate-400 disabled:opacity-50 disabled:bg-slate-100 font-medium",
+                        isPassword && "pr-14",
+                        error && "border-red-500 focus:ring-red-500/10 focus:border-red-500",
+                        className
+                    )}
+                    {...props}
+                />
+                {isPassword && (
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 p-2 rounded-lg transition-all active:scale-90"
+                    >
+                        {showPassword ? (
+                            <EyeOff className="w-5 h-5" />
+                        ) : (
+                            <Eye className="w-5 h-5" />
+                        )}
+                    </button>
                 )}
-                {...props}
-            />
-            {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
+            </div>
+            {error && <p className="text-xs text-red-600 font-bold tracking-tight">{error}</p>}
         </div>
     );
 };

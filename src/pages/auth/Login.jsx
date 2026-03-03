@@ -136,7 +136,7 @@ const Login = () => {
                         <div className="space-y-3">
                             <div className="flex justify-between items-center">
                                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Password</label>
-                                <a href="#" className="text-[11px] font-black text-blue-700 hover:text-blue-800 uppercase tracking-wider">Forgot?</a>
+                                <Link to="/forgot-password" title="Initiate password recovery protocol" className="text-[11px] font-black text-blue-700 hover:text-blue-800 uppercase tracking-wider">Forgot?</Link>
                             </div>
                             <Input
                                 type="password"

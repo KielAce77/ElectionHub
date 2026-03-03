@@ -4,6 +4,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 import VoteEntry from './pages/voting/VoteEntry';
 import PublicBallot from './pages/voting/PublicBallot';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -90,6 +92,8 @@ function App() {
             {/* Admin Auth Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Admin Dashboard Routes */}
             <Route path="/admin/" element={
