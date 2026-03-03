@@ -513,7 +513,13 @@ const ElectionManager = () => {
                             <ListCheck className="w-4 h-4 text-blue-700" />
                             Positions & Candidates
                         </h3>
-                        <Button variant="secondary" size="sm" onClick={handleAddPosition} className="gap-2 font-bold uppercase tracking-wider text-[10px]">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={handleAddPosition}
+                            className="gap-2 font-bold uppercase tracking-wider text-[10px]"
+                            disabled={election.status === 'active' || election.status === 'closed'}
+                        >
                             <Plus className="w-3.5 h-3.5" /> Add Position
                         </Button>
                     </div>
@@ -531,14 +537,16 @@ const ElectionManager = () => {
                                         setPositions(newPositions);
                                     }}
                                 />
-                                <button
-                                    className="mt-7 text-slate-300 hover:text-red-600 transition-colors"
-                                    title="Remove Position"
-                                    type="button"
-                                    onClick={() => handleRemovePosition(posIdx)}
-                                >
-                                    <Trash2 className="w-5 h-5" />
-                                </button>
+                                {election.status !== 'active' && election.status !== 'closed' && (
+                                    <button
+                                        className="mt-7 text-slate-300 hover:text-red-600 transition-colors"
+                                        title="Remove Position"
+                                        type="button"
+                                        onClick={() => handleRemovePosition(posIdx)}
+                                    >
+                                        <Trash2 className="w-5 h-5" />
+                                    </button>
+                                )}
                             </div>
 
                             <div className="space-y-6 pt-4">
@@ -553,42 +561,58 @@ const ElectionManager = () => {
                                                 <ImageIcon className="w-5 h-5" />
                                             </div>
                                         </div>
-                                        <div className="md:col-span-11 grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+                                        <div className="md:col-span-11 grid grid-cols-1 md:grid-cols-3 gap-6 relative">
                                             <Input
-                                                placeholder="Candidate Full Name"
+                                                placeholder="Full Name"
                                                 value={cand.full_name}
                                                 onChange={(e) => {
                                                     const newPositions = [...positions];
                                                     newPositions[posIdx].candidates[candIdx].full_name = e.target.value;
                                                     setPositions(newPositions);
                                                 }}
+                                                disabled={election.status === 'active' || election.status === 'closed'}
+                                            />
+                                            <Input
+                                                placeholder="Photo URL"
+                                                value={cand.photo_url || ''}
+                                                onChange={(e) => {
+                                                    const newPositions = [...positions];
+                                                    newPositions[posIdx].candidates[candIdx].photo_url = e.target.value;
+                                                    setPositions(newPositions);
+                                                }}
+                                                disabled={election.status === 'active' || election.status === 'closed'}
                                             />
                                             <div className="flex items-start gap-4">
                                                 <Input
-                                                    placeholder="Brief Bio / Credentials"
+                                                    placeholder="Credentials / Bio"
                                                     value={cand.bio}
                                                     onChange={(e) => {
                                                         const newPositions = [...positions];
                                                         newPositions[posIdx].candidates[candIdx].bio = e.target.value;
                                                         setPositions(newPositions);
                                                     }}
+                                                    disabled={election.status === 'active' || election.status === 'closed'}
                                                     className="flex-grow"
                                                 />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleRemoveCandidate(posIdx, candIdx)}
-                                                    className="mt-4 p-2 text-slate-300 hover:text-red-500 transition-colors"
-                                                    title="Remove Candidate"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                                                {(election.status !== 'active' && election.status !== 'closed') && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveCandidate(posIdx, candIdx)}
+                                                        className="mt-4 p-2 text-slate-300 hover:text-red-500 transition-colors"
+                                                        title="Remove Candidate"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
                                 ))}
-                                <Button variant="ghost" size="sm" onClick={() => handleAddCandidate(posIdx)} className="text-blue-700 hover:bg-blue-50 font-bold gap-2 text-[11px] uppercase tracking-wider">
-                                    <UserPlus className="w-3.5 h-3.5" /> Add Candidate
-                                </Button>
+                                {election.status !== 'active' && election.status !== 'closed' && (
+                                    <Button variant="ghost" size="sm" onClick={() => handleAddCandidate(posIdx)} className="text-blue-700 hover:bg-blue-50 font-bold gap-2 text-[11px] uppercase tracking-wider">
+                                        <UserPlus className="w-3.5 h-3.5" /> Add Candidate
+                                    </Button>
+                                )}
 
                                 {/* Real-time Voting Progress */}
                                 {Object.keys(resultsByCandidate).length > 0 && (
