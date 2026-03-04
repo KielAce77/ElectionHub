@@ -452,11 +452,20 @@ const ElectionManager = () => {
                         <p className="text-[9px] md:text-[10px] text-slate-400 font-extrabold uppercase tracking-widest truncate hidden xs:block">Configuration</p>
                     </div>
                     <div className="flex items-center gap-2 md:gap-3 shrink-0">
-                        <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2 px-3 md:px-6 shadow-blue-700/20 text-[10px] md:text-xs">
-                            <Save className="w-3.5 h-3.5" /> <span className="hidden xs:inline">{saving ? 'Saving...' : 'Save'}</span>
+                        {isEditing && (
+                            <Button
+                                variant="secondary"
+                                onClick={() => navigate(`/admin/results/${id}/`)}
+                                className="hidden sm:flex gap-2 px-4 h-10 md:h-12 border-indigo-200 text-indigo-700 font-bold text-xs uppercase"
+                            >
+                                <BarChart3 className="w-4 h-4" /> Results
+                            </Button>
+                        )}
+                        <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2 px-4 md:px-8 h-10 md:h-12 shadow-blue-700/20 text-[10px] md:text-sm font-black uppercase tracking-widest">
+                            <Save className="w-4 h-4" /> <span>{saving ? 'Saving...' : 'Save'}</span>
                         </Button>
-                        <Button variant="secondary" size="sm" onClick={() => setShowLogoutModal(true)} className="text-slate-500 font-bold px-2 py-1">
-                            <LogOut className="w-3.5 h-3.5" />
+                        <Button variant="secondary" size="sm" onClick={() => setShowLogoutModal(true)} className="text-slate-500 font-bold p-2 md:p-3 h-10 w-10 md:h-12 md:w-12">
+                            <LogOut className="w-4 h-4 md:w-5 md:h-5" />
                         </Button>
                     </div>
                 </div>

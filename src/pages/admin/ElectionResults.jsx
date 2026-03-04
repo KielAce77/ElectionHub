@@ -94,10 +94,18 @@ const ElectionResults = () => {
 
       if (electionsError) throw electionsError;
 
-      const chosenElection =
-        elections?.find((e) => e.id === requestedElectionId) || elections?.[0] || null;
+      if (!elections || elections.length === 0) {
+        setLoading(false);
+        return;
+      }
 
-      if (!chosenElection) return;
+      const chosenElection =
+        elections?.find((e) => e.id === requestedElectionId) || elections?.[0];
+
+      if (!chosenElection) {
+        setLoading(false);
+        return;
+      }
 
       setElection(chosenElection);
 
@@ -160,7 +168,25 @@ const ElectionResults = () => {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <Loader2 className="w-10 h-10 text-blue-700 animate-spin" />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 text-blue-700 animate-spin" />
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] animate-pulse">Loading Election Intelligence...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!election) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
+        <div className="bg-white p-12 rounded-3xl border border-slate-200 shadow-xl max-w-md w-full">
+          <div className="bg-slate-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <BarChart3 className="w-8 h-8 text-slate-400" />
+          </div>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Results Not Found</h2>
+          <p className="text-slate-500 font-medium mb-8">We couldn't find any results for this election. Ensure you have the correct link or try returning to the dashboard.</p>
+          <Button onClick={() => navigate('/admin')} className="w-full h-12">Return to Dashboard</Button>
+        </div>
       </div>
     );
   }
@@ -208,12 +234,12 @@ const ElectionResults = () => {
           <div className="flex items-center gap-4 md:gap-8">
             <button
               type="button"
-              onClick={() => navigate('/admin')}
-              className="flex items-center gap-1.5 md:gap-2 text-slate-500 hover:text-blue-700 transition-colors font-black text-[9px] md:text-[10px] uppercase tracking-[0.15em] md:tracking-[0.2em]"
+              onClick={() => navigate('/admin/')}
+              className="flex items-center gap-2 md:gap-3 text-slate-500 hover:text-blue-700 transition-all font-black text-[10px] md:text-xs uppercase tracking-[0.1em] md:tracking-[0.2em] py-2 md:py-3"
             >
-              <ArrowLeft className="w-3.5 h-3.5 md:w-4 md:h-4" />
-              <span className="hidden xs:inline">Exit to Console</span>
-              <span className="xs:hidden">Back</span>
+              <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="hidden sm:inline">Back to Dashboard</span>
+              <span className="sm:hidden">Exit</span>
             </button>
             <div className="hidden sm:flex items-center gap-3">
               <div className="bg-slate-950 p-1.5 rounded-xl shadow-lg shadow-black/10 shrink-0">

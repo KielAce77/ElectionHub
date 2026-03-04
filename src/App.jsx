@@ -98,17 +98,27 @@ function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Admin Dashboard Routes */}
+            <Route path="/admin" element={<Navigate to="/admin/" replace />} />
             <Route path="/admin/" element={
               <ProtectedRoute>
                 <AdminDashboard />
               </ProtectedRoute>
             } />
+
+            {/* Results Routes - Supporting both ID and general view */}
+            <Route path="/admin/results" element={<Navigate to="/admin/results/" replace />} />
             <Route path="/admin/results/" element={
               <ProtectedRoute>
                 <ElectionResults />
               </ProtectedRoute>
             } />
             <Route path="/admin/results/:electionId" element={
+              <ProtectedRoute>
+                <ElectionResults />
+              </ProtectedRoute>
+            } />
+            {/* Handle trailing slash case via the route itself for robustness */}
+            <Route path="/admin/results/:electionId/" element={
               <ProtectedRoute>
                 <ElectionResults />
               </ProtectedRoute>

@@ -37,11 +37,12 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         if (authLoading) return;
-        if (!profile?.organization_id) {
+        if (profile?.organization_id) {
+            fetchDashboardData();
+        } else if (!authLoading) {
+            // If no profile after auth is done, stop loading
             setDataLoading(false);
-            return;
         }
-        fetchDashboardData();
     }, [authLoading, profile?.organization_id]);
 
     const fetchDashboardData = async () => {
@@ -246,10 +247,13 @@ const AdminDashboard = () => {
 
     // Display a loading indicator during the initial authentication phase.
     // Dashboard analytics will update in the background for a responsive experience.
-    if (authLoading) {
+    if (authLoading || (dataLoading && elections.length === 0)) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50">
-                <Loader2 className="w-10 h-10 text-blue-700 animate-spin" />
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="w-10 h-10 text-blue-700 animate-spin" />
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] animate-pulse">Initializing Admin Console...</p>
+                </div>
             </div>
         );
     }
@@ -278,13 +282,13 @@ const AdminDashboard = () => {
                     </div>
                     <div className="flex items-center gap-2 md:gap-4 text-right">
                         <div className="hidden sm:block">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Logged in as</p>
-                            <p className="text-xs font-bold text-slate-900 truncate max-w-[150px]">
+                            <p className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none">Logged in as</p>
+                            <p className="text-xs md:text-sm font-bold text-slate-900 truncate max-w-[150px]">
                                 {profile?.full_name || user?.user_metadata?.full_name || user?.email}
                             </p>
                         </div>
-                        <Button variant="secondary" size="sm" onClick={() => setShowLogoutModal(true)} className="text-slate-500 font-bold px-2 py-1 md:px-3 md:py-1">
-                            <LogOut className="w-4 h-4" />
+                        <Button variant="secondary" size="sm" onClick={() => setShowLogoutModal(true)} className="text-slate-500 font-bold px-2 py-1 md:px-4 md:py-2.5 h-auto">
+                            <LogOut className="w-4 h-4 md:w-5 md:h-5" />
                         </Button>
                     </div>
                 </div>
@@ -385,8 +389,8 @@ const AdminDashboard = () => {
                                             <div className="flex items-start md:items-center gap-4 md:gap-6">
                                                 <div className={`w-1 md:w-1.5 h-10 md:h-12 rounded-full mt-1 md:mt-0 ${effectiveStatus === 'active' ? 'bg-emerald-500 shadow-md shadow-emerald-500/20' : effectiveStatus === 'upcoming' ? 'bg-blue-200' : 'bg-slate-300'}`} />
                                                 <div className="min-w-0 flex-1">
-                                                    <h4 className="font-black text-slate-900 text-base md:text-lg uppercase tracking-tight truncate">{election.title}</h4>
-                                                    <div className="flex flex-wrap items-center gap-x-2 md:gap-x-4 gap-y-1 mt-1 text-slate-500 font-bold text-[9px] md:text-[10px] uppercase tracking-wider">
+                                                    <h4 className="font-black text-slate-900 text-base md:text-xl uppercase tracking-tight truncate">{election.title}</h4>
+                                                    <div className="flex flex-wrap items-center gap-x-2 md:gap-x-4 gap-y-1 mt-1 text-slate-500 font-bold text-[9px] md:text-xs uppercase tracking-wider">
                                                         <span className="flex items-center gap-1">
                                                             <Ticket className="w-2.5 h-2.5 md:w-3 md:h-3" /> {usedCount}/{total} <span className="hidden sm:inline">Tokens</span>
                                                         </span>
@@ -408,12 +412,12 @@ const AdminDashboard = () => {
                                                         size="sm"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            navigate(`/admin/results/${election.id}`);
+                                                            navigate(`/admin/results/${election.id}/`);
                                                         }}
-                                                        className="h-8 w-8 md:h-9 md:w-9 p-0 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                                                        className="h-10 w-10 md:h-12 md:w-12 p-0 flex items-center justify-center rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 md:ring-4 md:ring-indigo-50"
                                                         title="View Results"
                                                     >
-                                                        <BarChart3 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                                        <BarChart3 className="w-4 h-4 md:w-5 md:h-5" />
                                                     </Button>
                                                 </div>
                                                 <ChevronRight className="w-5 h-5 text-slate-300 hidden md:block" />

@@ -70,9 +70,12 @@ const PublicResults = () => {
     }, [electionId]);
 
     const fetchResults = async () => {
+        if (!electionId) {
+            setLoading(false);
+            return;
+        }
         try {
             setLoading(true);
-            if (!electionId) return;
 
             const { data: chosenElection, error: electionError } = await supabase
                 .from('elections')
