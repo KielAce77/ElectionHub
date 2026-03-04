@@ -133,21 +133,21 @@ const PublicBallot = () => {
             {/* High-End Navigation */}
             <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/5 py-4 px-8">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Logo className="w-10 h-10 shadow-2xl shadow-blue-500/20" />
-                        <div className="hidden sm:block">
-                            <h2 className="text-white font-black uppercase tracking-tighter text-sm">Official Voting Portal</h2>
-                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Election ID: {election?.id.substring(0, 8)}</p>
+                    <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
+                        <Logo className="w-8 h-8 md:w-10 md:h-10 shadow-2xl shadow-blue-500/20 shrink-0" />
+                        <div className="min-w-0">
+                            <h2 className="text-white font-black uppercase tracking-tighter text-xs md:text-sm truncate">Voting Portal</h2>
+                            <p className="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate">Election ID: {election?.id.substring(0, 8)}</p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-6">
-                        <div className="flex flex-col items-end gap-1">
-                            <div className="flex items-center gap-4">
-                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Progress</span>
-                                <span className="text-xs font-black text-blue-400 tabular-nums">{progress}%</span>
+                    <div className="flex items-center gap-4 md:gap-6 shrink-0">
+                        <div className="hidden xs:flex flex-col items-end gap-1">
+                            <div className="flex items-center gap-3">
+                                <span className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest">Progress</span>
+                                <span className="text-[10px] md:text-xs font-black text-blue-400 tabular-nums">{progress}%</span>
                             </div>
-                            <div className="w-32 h-1 bg-white/5 rounded-full overflow-hidden">
+                            <div className="w-20 md:w-32 h-1 bg-white/5 rounded-full overflow-hidden">
                                 <motion.div
                                     className="h-full bg-blue-500"
                                     initial={{ width: 0 }}
@@ -155,7 +155,7 @@ const PublicBallot = () => {
                                 />
                             </div>
                         </div>
-                        <Badge variant="primary" className="bg-blue-500/10 text-blue-400 border-blue-500/20 px-4 py-1.5 h-auto font-black italic">
+                        <Badge variant="primary" className="bg-blue-500/10 text-blue-400 border-blue-500/20 px-2 md:px-4 py-1.5 h-auto font-black italic text-[8px] md:text-[10px]">
                             ENCRYPTED
                         </Badge>
                     </div>
@@ -164,12 +164,12 @@ const PublicBallot = () => {
 
             <main className="flex-grow max-w-7xl mx-auto w-full px-6 py-16">
                 {/* Election Title Section */}
-                <div className="mb-20 space-y-4">
+                <div className="mb-12 md:mb-20 space-y-4">
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                        <h1 className="text-6xl font-black text-white tracking-tighter max-w-4xl leading-[1.1]">
+                        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter max-w-4xl leading-[1.1]">
                             {election?.title}
                         </h1>
-                        <p className="text-xl text-slate-400 mt-6 max-w-3xl leading-relaxed font-medium">
+                        <p className="text-base md:text-xl text-slate-400 mt-4 md:mt-6 max-w-3xl leading-relaxed font-medium">
                             {election?.description}
                         </p>
                     </motion.div>
@@ -185,15 +185,15 @@ const PublicBallot = () => {
                             viewport={{ once: true, margin: "-100px" }}
                             className="space-y-12"
                         >
-                            <div className="flex items-center gap-6">
-                                <div className="text-6xl font-black text-white/5 italic tabular-nums">0{pIdx + 1}</div>
+                            <div className="flex items-center gap-4 md:gap-6">
+                                <div className="text-4xl md:text-6xl font-black text-white/5 italic tabular-nums">0{pIdx + 1}</div>
                                 <div className="flex-grow">
-                                    <h3 className="text-3xl font-black text-white uppercase tracking-tight">{position.title}</h3>
-                                    <div className="h-0.5 w-12 bg-blue-500 mt-2" />
+                                    <h3 className="text-xl md:text-3xl font-black text-white uppercase tracking-tight">{position.title}</h3>
+                                    <div className="h-0.5 w-8 md:w-12 bg-blue-500 mt-2" />
                                 </div>
-                                <div className="text-right">
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-1">Status</p>
-                                    <Badge variant={selections[position.id] ? "success" : "neutral"} className="rounded-md px-3 font-black">
+                                <div className="text-right shrink-0">
+                                    <p className="text-[8px] md:text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-1">Status</p>
+                                    <Badge variant={selections[position.id] ? "success" : "neutral"} className="rounded-md px-2 md:px-3 font-black text-[9px] md:text-[10px]">
                                         {selections[position.id] ? "SELECTED" : "REQUIRED"}
                                     </Badge>
                                 </div>
@@ -212,17 +212,17 @@ const PublicBallot = () => {
                                         >
                                             <Card className={`relative h-full overflow-hidden border-none bg-slate-900/40 hover:bg-slate-900/60 ring-1 transition-all duration-300 ${isSelected ? 'ring-blue-500 bg-blue-500/5' : 'ring-white/5 hover:ring-white/20'}`}>
 
-                                                <div className="p-8 flex flex-col items-center text-center space-y-6">
+                                                <div className="p-6 md:p-8 flex flex-col items-center text-center space-y-5 md:space-y-6">
                                                     {/* Radio Button Style Indicator */}
-                                                    <div className="absolute top-6 left-6">
-                                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'border-blue-500 bg-blue-500' : 'border-white/20'}`}>
-                                                            {isSelected && <Check className="w-3 h-3 text-white stroke-[4]" />}
+                                                    <div className="absolute top-4 left-4 md:top-6 md:left-6">
+                                                        <div className={`w-5 h-5 md:w-6 md:h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'border-blue-500 bg-blue-500' : 'border-white/20'}`}>
+                                                            {isSelected && <Check className="w-2.5 h-2.5 md:w-3 md:h-3 text-white stroke-[4]" />}
                                                         </div>
                                                     </div>
 
                                                     {/* Candidate Photo / Circle */}
                                                     <div className="relative">
-                                                        <div className={`w-32 h-32 rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 ${isSelected ? 'ring-4 ring-blue-500' : 'ring-1 ring-white/10'}`}>
+                                                        <div className={`w-32 h-32 md:w-48 md:h-48 rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 ${isSelected ? 'ring-4 ring-blue-500' : 'ring-1 ring-white/10'}`}>
                                                             {candidate.photo_url ? (
                                                                 <img
                                                                     src={candidate.photo_url}
@@ -231,7 +231,7 @@ const PublicBallot = () => {
                                                                 />
                                                             ) : (
                                                                 <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                                                                    <span className="text-4xl font-black text-white opacity-20">
+                                                                    <span className="text-3xl md:text-4xl font-black text-white opacity-20">
                                                                         {candidate.full_name?.charAt(0).toUpperCase()}
                                                                     </span>
                                                                 </div>
@@ -245,16 +245,16 @@ const PublicBallot = () => {
                                                     </div>
 
                                                     {/* Name & Bio */}
-                                                    <div className="space-y-3">
-                                                        <h4 className="text-2xl font-black text-white tracking-tight uppercase group-hover:text-blue-400 transition-colors">
+                                                    <div className="space-y-2 md:space-y-3">
+                                                        <h4 className="text-xl md:text-2xl font-black text-white tracking-tight uppercase group-hover:text-blue-400 transition-colors">
                                                             {candidate.full_name}
                                                         </h4>
-                                                        <p className="text-xs text-slate-400 font-medium leading-relaxed italic opacity-80 line-clamp-2 max-w-[200px]">
+                                                        <p className="text-[10px] md:text-xs text-slate-400 font-medium leading-relaxed italic opacity-80 line-clamp-2 max-w-[200px]">
                                                             "{candidate.bio || 'Formal mandate pending.'}"
                                                         </p>
                                                     </div>
 
-                                                    <button className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${isSelected ? 'bg-blue-600 text-white' : 'bg-white/5 text-slate-400 group-hover:bg-white/10'}`}>
+                                                    <button className={`w-full py-2.5 md:py-3 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] transition-all ${isSelected ? 'bg-blue-600 text-white' : 'bg-white/5 text-slate-400 group-hover:bg-white/10'}`}>
                                                         {isSelected ? 'Candidate Selected' : 'Choose Candidate'}
                                                     </button>
                                                 </div>
@@ -269,18 +269,18 @@ const PublicBallot = () => {
 
                 {/* Final Submission Card */}
                 <section className="mt-40 mb-24">
-                    <Card className="bg-slate-950 border border-white/5 p-12 relative overflow-hidden group">
+                    <Card className="bg-slate-950 border border-white/5 p-8 md:p-12 relative overflow-hidden group">
                         <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-blue-500/5 rounded-full blur-[100px] group-hover:bg-blue-500/10 transition-all duration-700" />
 
-                        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
-                            <div className="max-w-xl space-y-6">
+                        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10 md:gap-12">
+                            <div className="max-w-xl space-y-4 md:space-y-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10">
-                                        <ShieldCheck className="w-6 h-6 text-blue-500" />
+                                    <div className="w-10 h-10 md:w-12 md:h-12 bg-white/5 rounded-xl md:rounded-2xl flex items-center justify-center border border-white/10 shrink-0">
+                                        <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-blue-500" />
                                     </div>
-                                    <h3 className="text-3xl font-black text-white tracking-tight">Authorize Submission</h3>
+                                    <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight">Authorize Submission</h3>
                                 </div>
-                                <p className="text-slate-400 font-medium leading-relaxed">
+                                <p className="text-sm md:text-slate-400 font-medium leading-relaxed opacity-70">
                                     By clicking below, you attest that these selections represent your formal mandate. Your unique credentials will be retired and your ballot cryptographically signed.
                                 </p>
                             </div>
@@ -289,7 +289,7 @@ const PublicBallot = () => {
                                 <Button
                                     onClick={handleSubmitBallot}
                                     disabled={submitting}
-                                    className={`w-full lg:w-80 h-24 text-sm font-black uppercase tracking-[0.3em] transition-all duration-300 ${progress === 100 ? 'bg-blue-600 hover:bg-blue-500 shadow-[0_0_50px_rgba(59,130,246,0.2)]' : 'bg-slate-800 opacity-50 cursor-not-allowed'}`}
+                                    className={`w-full lg:w-80 h-20 md:h-24 text-xs md:text-sm font-black uppercase tracking-[0.3em] transition-all duration-300 ${progress === 100 ? 'bg-blue-600 hover:bg-blue-500 shadow-[0_0_50px_rgba(59,130,246,0.2)]' : 'bg-slate-800 opacity-50 cursor-not-allowed'}`}
                                 >
                                     {submitting ? (
                                         <div className="flex items-center gap-4">
@@ -302,7 +302,7 @@ const PublicBallot = () => {
                                         </div>
                                     )}
                                 </Button>
-                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] text-center mt-6">Secure Terminal V4.2.0</p>
+                                <p className="text-[9px] md:text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] text-center mt-6">Secure Terminal V4.2.0</p>
                             </div>
                         </div>
                     </Card>

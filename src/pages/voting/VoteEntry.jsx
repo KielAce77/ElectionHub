@@ -104,9 +104,12 @@ const VoteEntry = () => {
                 </div>
             </div>
 
-            <div className="flex items-center justify-center p-8 sm:p-24 bg-white relative">
-                <div className="absolute top-0 right-0 p-8 lg:hidden">
-                    <Logo />
+            <div className="flex items-center justify-center p-6 xs:p-12 sm:p-24 bg-white relative">
+                <div className="absolute top-0 right-0 p-6 md:p-8">
+                    <div className="text-[9px] md:text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] md:tracking-[0.3em] flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                        Session Encrypted
+                    </div>
                 </div>
 
                 <motion.div
@@ -114,9 +117,14 @@ const VoteEntry = () => {
                     animate={{ opacity: 1, x: 0 }}
                     className="w-full max-w-sm"
                 >
-                    <div className="mb-12">
-                        <h2 className="text-4xl font-black text-slate-950 tracking-tighter">Enter Voting Token</h2>
-                        <p className="text-slate-500 mt-4 font-medium text-lg leading-relaxed">Please provide the 12-character code sent to you by your administrator.</p>
+                    <div className="lg:hidden mb-12 flex items-center gap-3">
+                        <Logo className="w-10 h-10" />
+                        <span className="text-slate-900 font-extrabold tracking-tighter text-2xl uppercase">ElectionHub</span>
+                    </div>
+
+                    <div className="mb-8 md:mb-12">
+                        <h2 className="text-3xl md:text-4xl font-black text-slate-950 tracking-tighter">Enter Voting Token</h2>
+                        <p className="text-slate-500 mt-3 md:mt-4 font-medium text-base md:text-lg leading-relaxed">Please provide the 12-character code sent to you by your administrator.</p>
                     </div>
 
                     <form onSubmit={handleVerifyToken} className="space-y-8">

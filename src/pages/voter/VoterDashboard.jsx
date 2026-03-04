@@ -44,20 +44,21 @@ const VoterDashboard = () => {
     return (
         <div className="min-h-screen bg-slate-50">
             {/* Top Professional Navigation */}
-            <nav className="bg-white border-b border-slate-200 px-6 py-4">
+            <nav className="bg-white border-b border-slate-200 px-4 md:px-6 py-3 md:py-4 sticky top-0 z-30 shadow-sm transition-all duration-300">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-blue-700 p-1.5 rounded-lg">
-                            <Shield className="w-5 h-5 text-white" />
+                    <div className="flex items-center gap-2 md:gap-3">
+                        <div className="bg-blue-700 p-1.5 rounded-lg shadow-lg shadow-blue-700/20 shrink-0">
+                            <Shield className="w-4 h-4 md:w-5 md:h-5 text-white" />
                         </div>
-                        <span className="font-extrabold text-slate-900 tracking-tight text-xl">ElectionHub</span>
+                        <span className="font-black text-slate-900 tracking-tighter text-lg md:text-xl uppercase italic">ElectionHub</span>
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="text-right hidden sm:block">
-                            <p className="text-sm font-bold text-slate-900 leading-none">{profile?.full_name}</p>
+                            <p className="text-sm font-black text-slate-900 leading-none truncate max-w-[150px]">{profile?.full_name}</p>
                             <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1">Authorized Official</p>
                         </div>
-                        <button onClick={signOut} className="text-slate-400 hover:text-red-600 transition-colors">
+                        <div className="h-6 w-px bg-slate-200 hidden xs:block mx-1" />
+                        <button onClick={signOut} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Secure Logout">
                             <LogOut className="w-5 h-5" />
                         </button>
                     </div>
@@ -65,13 +66,15 @@ const VoterDashboard = () => {
             </nav>
 
             <main className="max-w-7xl mx-auto px-6 py-12">
-                <header className="mb-12">
-                    <div className="flex items-center gap-2 text-blue-700 font-bold text-xs uppercase tracking-[0.2em] mb-3">
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-700"></div>
+                <header className="mb-10 md:mb-12">
+                    <div className="flex items-center gap-2 text-blue-700 font-black text-[10px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] mb-3">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-700 animate-pulse"></div>
                         Governance Portal
                     </div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Voter Compliance & Ballots</h1>
-                    <p className="text-slate-500 mt-2 font-medium max-w-2xl">
+                    <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter leading-tight">
+                        Voter Compliance & Ballots
+                    </h1>
+                    <p className="text-sm md:text-base text-slate-500 mt-3 md:mt-4 font-medium max-w-2xl leading-relaxed opacity-80">
                         Welcome to the official {profile?.organizations?.name} voting platform. Please review the active mandates and cast your vote before the scheduled deadline.
                     </p>
                 </header>

@@ -140,35 +140,36 @@ export const AuthProvider = ({ children }) => {
         // Synchronize local authentication state with the remote server.
         const syncAuth = async () => {
             try {
-                const { data: { session } } = await withTimeout(
+                const { data: { session }, error: sessionError } = await withTimeout(
                     supabase.auth.getSession(),
-                    'supabase.auth.getSession'
+                    'supabase.auth.getSession',
+                    5000 // Shorter timeout for initial check
                 );
+
+                if (sessionError) throw sessionError;
                 if (!isMounted) return;
 
                 const currentUser = session?.user ?? null;
                 setUser(currentUser);
 
-                // OPTIMIZATION: Retrieve the profile from local storage for a faster initial load.
-                if (currentUser && typeof window !== 'undefined') {
-                    const cached = window.sessionStorage.getItem('electionhub-profile');
+                if (currentUser) {
+                    // Fast path: try cache first
+                    const cached = typeof window !== 'undefined' ? window.sessionStorage.getItem('electionhub-profile') : null;
                     if (cached) {
                         try {
                             const p = JSON.parse(cached);
                             if (p && p.id === currentUser.id) {
                                 setProfile(p);
-                                // Unblock UI immediately if cache hits
                                 setLoading(false);
                             }
                         } catch (e) { }
                     }
-                }
 
-                if (currentUser) {
+                    // Background sync of profile data
                     const profileData = await ensureProfile(currentUser);
                     if (isMounted) {
                         setProfile(profileData);
-                        if (typeof window !== 'undefined' && profileData) {
+                        if (profileData && typeof window !== 'undefined') {
                             window.sessionStorage.setItem('electionhub-profile', JSON.stringify(profileData));
                         }
                     }
@@ -181,7 +182,7 @@ export const AuthProvider = ({ children }) => {
                     }
                 }
             } catch (err) {
-                console.error('Auth: Sync failed:', err);
+                console.warn('Auth: Initial sync note:', err.message);
             } finally {
                 if (isMounted) setLoading(false);
             }
@@ -199,15 +200,24 @@ export const AuthProvider = ({ children }) => {
                 setUser(currentUser);
 
                 if (currentUser) {
-                    // Only block on loading if we don't have a profile yet (state or cache)
-                    if (!profile) setLoading(true);
+                    // Only block on loading if we don't have a profile yet and haven't finished syncAuth
+                    // This prevents stalling on tab focus if profile is already in state
+                    const needsProfileFetch = !profile || profile.id !== currentUser.id;
 
-                    const p = await ensureProfile(currentUser);
-                    if (isMounted) {
-                        setProfile(p);
-                        if (typeof window !== 'undefined' && p) {
-                            window.sessionStorage.setItem('electionhub-profile', JSON.stringify(p));
-                        }
+                    if (needsProfileFetch) {
+                        // Attempt to fetch profile without blocking indefinitely
+                        ensureProfile(currentUser).then(p => {
+                            if (isMounted) {
+                                setProfile(p);
+                                if (p && typeof window !== 'undefined') {
+                                    window.sessionStorage.setItem('electionhub-profile', JSON.stringify(p));
+                                }
+                                setLoading(false);
+                            }
+                        }).catch(() => {
+                            if (isMounted) setLoading(false);
+                        });
+                    } else {
                         setLoading(false);
                     }
                 } else {

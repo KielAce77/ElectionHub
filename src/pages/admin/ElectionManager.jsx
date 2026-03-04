@@ -40,9 +40,44 @@ const ElectionManager = () => {
     const positionsEndRef = useRef(null);
 
     const handleSignOutClick = async () => {
+        // Clear draft when logging out
+        localStorage.removeItem('election_draft');
+        localStorage.removeItem('positions_draft');
         await signOut();
         navigate('/login', { replace: true });
     };
+
+    // Data Persistence: Load Draft
+    useEffect(() => {
+        if (!isEditing) {
+            const savedElection = localStorage.getItem('election_draft');
+            const savedPositions = localStorage.getItem('positions_draft');
+
+            if (savedElection) {
+                try {
+                    setElection(JSON.parse(savedElection));
+                } catch (e) {
+                    console.error('Failed to parse election draft');
+                }
+            }
+
+            if (savedPositions) {
+                try {
+                    setPositions(JSON.parse(savedPositions));
+                } catch (e) {
+                    console.error('Failed to parse positions draft');
+                }
+            }
+        }
+    }, [isEditing]);
+
+    // Data Persistence: Save Draft
+    useEffect(() => {
+        if (!isEditing && !loading) {
+            localStorage.setItem('election_draft', JSON.stringify(election));
+            localStorage.setItem('positions_draft', JSON.stringify(positions));
+        }
+    }, [election, positions, isEditing, loading]);
 
     useEffect(() => {
         if (isEditing && id) {
@@ -193,7 +228,11 @@ const ElectionManager = () => {
             if (error) throw error;
 
             toast.success(`${election.total_expected_voters} tokens generated successfully.`);
-            // Refresh current election details to update the generation status.
+
+            // Update state locally and trigger refresh
+            setElection(prev => ({ ...prev, tokens_generated: true }));
+            await fetchElectionDetails();
+            await handleLoadTokens(); // Automatically open tokens modal
         } catch (err) {
             console.error('Generation error:', err);
             toast.error(err.message || 'Failed to generate tokens.');
@@ -312,6 +351,22 @@ const ElectionManager = () => {
             return;
         }
 
+        // Validate Candidate Names
+        for (let i = 0; i < positions.length; i++) {
+            const pos = positions[i];
+            if (!pos.title.trim()) {
+                toast.error(`Please provide a title for Position #${i + 1}`);
+                return;
+            }
+            for (let j = 0; j < pos.candidates.length; j++) {
+                const cand = pos.candidates[j];
+                if (!cand.full_name.trim()) {
+                    toast.error(`Candidate name is compulsory (Position: ${pos.title}, Candidate #${j + 1})`);
+                    return;
+                }
+            }
+        }
+
         setSaving(true);
         try {
             // Ensure the administrator has a valid organizational context before proceeding.
@@ -365,6 +420,11 @@ const ElectionManager = () => {
             }
 
             toast.success('Election saved successfully.');
+            // Clear draft after successful save
+            if (!isEditing) {
+                localStorage.removeItem('election_draft');
+                localStorage.removeItem('positions_draft');
+            }
             if (!isEditing) navigate(`/admin/elections/${electionId}/`);
         } catch (err) {
             console.error('Save error:', err);
@@ -382,21 +442,21 @@ const ElectionManager = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
-            <header className="sticky top-0 z-10 bg-white border-b border-slate-200 py-4 px-6 md:px-8 shadow-sm">
-                <div className="max-w-5xl mx-auto flex items-center justify-between">
-                    <button onClick={() => navigate('/admin/')} className="text-slate-500 hover:text-slate-900 flex items-center gap-2 font-bold text-xs uppercase tracking-wider transition-colors">
-                        <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+            <header className="sticky top-0 z-10 bg-white border-b border-slate-200 py-3 md:py-4 px-4 md:px-8 shadow-sm">
+                <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+                    <button onClick={() => navigate('/admin/')} className="text-slate-500 hover:text-slate-900 flex items-center gap-1 md:gap-2 font-bold text-[10px] uppercase tracking-wider transition-colors shrink-0">
+                        <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Back</span>
                     </button>
-                    <div className="text-center">
-                        <h1 className="text-lg font-black text-slate-900 tracking-tight">{isEditing ? 'Edit Election' : 'New Election'}</h1>
-                        <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest">Election Configuration</p>
+                    <div className="text-center min-w-0 flex-1">
+                        <h1 className="text-base md:text-lg font-black text-slate-900 tracking-tight truncate">{isEditing ? 'Edit Election' : 'New Election'}</h1>
+                        <p className="text-[9px] md:text-[10px] text-slate-400 font-extrabold uppercase tracking-widest truncate hidden xs:block">Configuration</p>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <Button onClick={handleSave} disabled={saving} className="gap-2 px-6 shadow-blue-700/20">
-                            <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Election'}
+                    <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                        <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2 px-3 md:px-6 shadow-blue-700/20 text-[10px] md:text-xs">
+                            <Save className="w-3.5 h-3.5" /> <span className="hidden xs:inline">{saving ? 'Saving...' : 'Save'}</span>
                         </Button>
-                        <Button variant="secondary" size="sm" onClick={() => setShowLogoutModal(true)} className="text-slate-500 font-bold px-3 py-1">
-                            <LogOut className="w-4 h-4" />
+                        <Button variant="secondary" size="sm" onClick={() => setShowLogoutModal(true)} className="text-slate-500 font-bold px-2 py-1">
+                            <LogOut className="w-3.5 h-3.5" />
                         </Button>
                     </div>
                 </div>
@@ -428,15 +488,15 @@ const ElectionManager = () => {
                                     <Button
                                         onClick={handleGenerateTokens}
                                         disabled={generating || election.total_expected_voters <= 0}
-                                        className="bg-blue-600 hover:bg-blue-700 gap-2 shadow-blue-600/20"
+                                        className="bg-blue-600 hover:bg-blue-700 gap-2 shadow-blue-600/20 w-full sm:w-auto text-[10px] md:text-sm h-11 md:h-12"
                                     >
                                         {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                                         Generate Tokens
                                     </Button>
                                 </div>
                             ) : (
-                                <div className="flex flex-col sm:flex-row items-center gap-4">
-                                    <Badge variant="success" className="h-10 px-6 text-xs tracking-widest">
+                                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4">
+                                    <Badge variant="success" className="h-10 px-4 md:px-6 text-[9px] md:text-xs tracking-widest shrink-0">
                                         {election.total_expected_voters} TOKENS ACTIVE
                                     </Badge>
                                     <Button
@@ -445,11 +505,11 @@ const ElectionManager = () => {
                                         size="sm"
                                         disabled={tokensLoading}
                                         onClick={handleLoadTokens}
-                                        className="gap-2 font-bold text-[11px] uppercase tracking-widest"
+                                        className="gap-2 font-bold text-[9px] md:text-[11px] uppercase tracking-widest h-10 px-4"
                                     >
                                         {tokensLoading ? (
                                             <>
-                                                <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading Tokens...
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin" /> <span className="hidden xs:inline">Loading...</span>
                                             </>
                                         ) : (
                                             <>
@@ -490,17 +550,18 @@ const ElectionManager = () => {
                     </div>
                 )}
 
-                <Card className="shadow-none border-slate-200 p-8 space-y-8">
-                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                        <Settings className="w-4 h-4 text-blue-700" />
+                <Card className="shadow-none border-slate-200 p-4 md:p-8 space-y-6 md:space-y-8">
+                    <h3 className="text-xs md:text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                        <Settings className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-700" />
                         Basic Information
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                         <div className="md:col-span-2">
                             <Input
                                 label="Election Title"
                                 placeholder="e.g. 2024 Board of Directors Election"
                                 value={election.title}
+                                innerClassName="h-11 md:h-12 text-sm md:text-base"
                                 onChange={(e) => setElection({ ...election, title: e.target.value })}
                             />
                         </div>
@@ -510,12 +571,13 @@ const ElectionManager = () => {
                             min="1"
                             placeholder="e.g. 500"
                             value={election.total_expected_voters}
+                            innerClassName="h-11 md:h-12"
                             onChange={(e) => setElection({ ...election, total_expected_voters: parseInt(e.target.value) || 0 })}
                             disabled={election.tokens_generated} // LOCK value after generation
                         />
-                        <div className="flex flex-col justify-end">
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Notice</p>
-                            <p className="text-xs text-slate-500 leading-relaxed italic">
+                        <div className="flex flex-col justify-center">
+                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-1">Notice</p>
+                            <p className="text-[10px] md:text-xs text-slate-500 leading-relaxed italic">
                                 {election.tokens_generated
                                     ? "Expected capacity is locked as tokens have already been distributed."
                                     : "This number determines the quantity of unique voting credentials generated."}
@@ -524,20 +586,24 @@ const ElectionManager = () => {
                         <Input
                             label="Start Date"
                             type="datetime-local"
+                            min={new Date().toISOString().substring(0, 16)}
                             value={election.start_date ? election.start_date.substring(0, 16) : ''}
+                            innerClassName="h-11 md:h-12"
                             onChange={(e) => setElection({ ...election, start_date: e.target.value })}
                         />
                         <Input
                             label="End Date"
                             type="datetime-local"
+                            min={election.start_date ? election.start_date.substring(0, 16) : new Date().toISOString().substring(0, 16)}
                             value={election.end_date ? election.end_date.substring(0, 16) : ''}
+                            innerClassName="h-11 md:h-12"
                             onChange={(e) => setElection({ ...election, end_date: e.target.value })}
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wider text-[11px]">Description</label>
+                        <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wider text-[10px] md:text-[11px]">Description</label>
                         <textarea
-                            className="w-full bg-white border border-slate-300 rounded-md px-4 py-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all min-h-[120px]"
+                            className="w-full bg-white border border-slate-300 rounded-md px-4 py-3 text-slate-900 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all min-h-[100px] md:min-h-[120px]"
                             placeholder="Provide information about this election to the voters..."
                             value={election.description}
                             onChange={(e) => setElection({ ...election, description: e.target.value })}
@@ -594,12 +660,12 @@ const ElectionManager = () => {
                                 </p>
                                 <div className="space-y-4">
                                     {pos.candidates.map((cand, candIdx) => (
-                                        <div key={candIdx} className="relative group bg-slate-50/50 rounded-2xl p-6 border border-slate-100 transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50">
-                                            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-                                                {/* Left: Candidate Photo Preview/Upload */}
-                                                <div className="md:col-span-3 lg:col-span-2">
+                                        <div key={candIdx} className="relative group bg-slate-50/50 rounded-2xl p-4 md:p-6 border border-slate-100 transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50">
+                                            <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
+                                                {/* Candidate Photo Preview/Upload */}
+                                                <div className="shrink-0">
                                                     <div className="flex flex-col items-center gap-3">
-                                                        <div className="relative w-24 h-24 rounded-2xl bg-white shadow-inner flex items-center justify-center overflow-hidden border border-slate-200">
+                                                        <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-white shadow-inner flex items-center justify-center overflow-hidden border border-slate-200">
                                                             {cand.photo_url ? (
                                                                 <img
                                                                     src={cand.photo_url}
@@ -607,13 +673,13 @@ const ElectionManager = () => {
                                                                     className="w-full h-full object-cover"
                                                                 />
                                                             ) : (
-                                                                <ImageIcon className="w-8 h-8 text-slate-200" />
+                                                                <ImageIcon className="w-6 h-6 md:w-8 md:h-8 text-slate-200" />
                                                             )}
                                                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors pointer-events-none" />
                                                         </div>
                                                         <label className="w-full">
-                                                            <div className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-[0.1em] py-2 px-3 rounded-lg text-center cursor-pointer transition-all shadow-lg shadow-blue-600/20 active:scale-95">
-                                                                Upload Photo
+                                                            <div className="bg-blue-600 hover:bg-blue-700 text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] py-2 px-3 rounded-lg text-center cursor-pointer transition-all shadow-lg shadow-blue-600/20 active:scale-95">
+                                                                Upload
                                                             </div>
                                                             <input
                                                                 type="file"
@@ -632,13 +698,14 @@ const ElectionManager = () => {
                                                     </div>
                                                 </div>
 
-                                                {/* Middle: Name & Bio Inputs */}
-                                                <div className="md:col-span-8 lg:col-span-9 space-y-4">
-                                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                                {/* Name & Bio Inputs */}
+                                                <div className="flex-grow w-full space-y-4">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                         <Input
                                                             label="Full Name"
                                                             placeholder="Enter name..."
                                                             value={cand.full_name}
+                                                            innerClassName="h-11"
                                                             onChange={(e) => {
                                                                 const newPositions = [...positions];
                                                                 newPositions[posIdx].candidates[candIdx].full_name = e.target.value;
@@ -650,6 +717,7 @@ const ElectionManager = () => {
                                                             label="Credentials / Bio"
                                                             placeholder="Short description..."
                                                             value={cand.bio}
+                                                            innerClassName="h-11"
                                                             onChange={(e) => {
                                                                 const newPositions = [...positions];
                                                                 newPositions[posIdx].candidates[candIdx].bio = e.target.value;
@@ -658,13 +726,13 @@ const ElectionManager = () => {
                                                             disabled={election.status === 'active' || election.status === 'closed'}
                                                         />
                                                     </div>
-                                                    <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
-                                                        * Photo Tip: Use a professional square image (Max 2MB)
+                                                    <p className="text-[9px] md:text-[10px] text-slate-400 font-medium uppercase tracking-wider text-center md:text-left">
+                                                        * Tip: Square image (Max 2MB)
                                                     </p>
                                                 </div>
 
-                                                {/* Right: Actions */}
-                                                <div className="md:col-span-1 lg:col-span-1 flex justify-end">
+                                                {/* Actions */}
+                                                <div className="absolute top-2 right-2 md:relative md:top-0 md:right-0">
                                                     {(election.status !== 'active' && election.status !== 'closed') && (
                                                         <button
                                                             type="button"
@@ -672,7 +740,7 @@ const ElectionManager = () => {
                                                             className="p-3 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all"
                                                             title="Remove Candidate"
                                                         >
-                                                            <Trash2 className="w-5 h-5" />
+                                                            <Trash2 className="w-5 h-5 md:w-5 md:h-5" />
                                                         </button>
                                                     )}
                                                 </div>

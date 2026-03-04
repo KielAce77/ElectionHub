@@ -103,9 +103,9 @@ const Login = () => {
             </div>
 
             {/* Secure Sign-in Interface */}
-            <div className="flex items-center justify-center p-8 sm:p-24 bg-white relative">
-                <div className="absolute top-0 right-0 p-8">
-                    <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] flex items-center gap-2">
+            <div className="flex items-center justify-center p-6 xs:p-12 sm:p-24 bg-white relative">
+                <div className="absolute top-0 right-0 p-6 md:p-8">
+                    <div className="text-[9px] md:text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] md:tracking-[0.3em] flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                         System Ready
                     </div>
@@ -116,9 +116,14 @@ const Login = () => {
                     animate={{ opacity: 1, x: 0 }}
                     className="w-full max-w-sm"
                 >
-                    <div className="mb-12">
-                        <h2 className="text-4xl font-black text-slate-950 tracking-tighter">Sign In</h2>
-                        <p className="text-slate-500 mt-4 font-medium text-lg leading-relaxed">Please enter your account details to access the voting dashboard.</p>
+                    <div className="lg:hidden mb-12 flex items-center gap-3">
+                        <Logo className="w-10 h-10" />
+                        <span className="text-slate-900 font-extrabold tracking-tighter text-2xl uppercase">ElectionHub</span>
+                    </div>
+
+                    <div className="mb-8 md:mb-12">
+                        <h2 className="text-3xl md:text-4xl font-black text-slate-950 tracking-tighter">Sign In</h2>
+                        <p className="text-slate-500 mt-3 md:mt-4 font-medium text-base md:text-lg leading-relaxed">Please enter your account details to access the voting dashboard.</p>
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-8">

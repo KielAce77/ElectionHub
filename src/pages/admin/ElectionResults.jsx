@@ -12,16 +12,34 @@ const useQuery = () => {
   return useMemo(() => new URLSearchParams(search), [search]);
 };
 
-const CandidateRow = ({ rank, name, affiliation, votes, percentage, isWinner }) => {
+const CandidateRow = ({ rank, name, affiliation, votes, percentage, isWinner, photoUrl }) => {
   return (
-    <div className={`flex items-center gap-6 py-4 px-4 rounded-xl transition-all ${isWinner ? 'bg-blue-50/50 ring-1 ring-blue-100' : 'hover:bg-slate-50'}`}>
-      <div className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-black ${isWinner ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+    <div className={`flex items-center gap-6 py-4 px-4 rounded-xl transition-all ${isWinner ? 'bg-blue-50/50 ring-1 ring-blue-100 scale-[1.02] shadow-sm' : 'hover:bg-slate-50 opacity-80'}`}>
+      <div className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-black shrink-0 ${isWinner ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
         {rank}
       </div>
-      <div className="flex-1">
+
+      <div className="relative shrink-0">
+        <div className={`w-12 h-12 rounded-xl overflow-hidden border ${isWinner ? 'w-16 h-16 border-blue-200 ring-4 ring-blue-50/50' : 'border-slate-200'} transition-all`}>
+          {photoUrl ? (
+            <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-slate-100 flex items-center justify-center">
+              <Users className="w-5 h-5 text-slate-300" />
+            </div>
+          )}
+        </div>
+        {isWinner && (
+          <div className="absolute -top-2 -right-2 bg-blue-600 text-white p-1 rounded-lg">
+            <Award className="w-3 h-3" />
+          </div>
+        )}
+      </div>
+
+      <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className={`text-sm font-bold ${isWinner ? 'text-blue-900' : 'text-slate-900'}`}>{name || 'Unnamed candidate'}</p>
-          {isWinner && <Award className="w-4 h-4 text-blue-600" />}
+          <p className={`text-sm font-bold truncate ${isWinner ? 'text-blue-900 text-base' : 'text-slate-900'}`}>{name || 'Unnamed candidate'}</p>
+          {isWinner && <Badge variant="success" className="text-[8px] font-black tracking-widest px-1.5">WINNER</Badge>}
         </div>
         {affiliation && (
           <p className="text-[11px] font-medium text-slate-500 mt-0.5 line-clamp-1 italic">"{affiliation}"</p>
@@ -93,7 +111,8 @@ const ElectionResults = () => {
               candidates (
                 id,
                 full_name,
-                bio
+                bio,
+                photo_url
               )
             `)
             .eq('election_id', chosenElection.id),
@@ -146,54 +165,96 @@ const ElectionResults = () => {
     );
   }
 
+  const handleExportCSV = () => {
+    if (!election || !positions.length) return;
+
+    let csvContent = `Election: ${election.title}\n`;
+    csvContent += `Generated: ${new Date().toLocaleString()}\n\n`;
+
+    positions.forEach(pos => {
+      csvContent += `Position: ${pos.title}\n`;
+      csvContent += `Rank,Candidate,Bio,Votes,Percentage\n`;
+
+      const candidateTotals = pos.candidates.map((c) => ({
+        name: c.full_name,
+        votes: votesByCandidate[c.id] || 0,
+        bio: c.bio
+      })).sort((a, b) => b.votes - a.votes);
+
+      const totalForPos = candidateTotals.reduce((s, c) => s + c.votes, 0) || 1;
+
+      candidateTotals.forEach((cand, idx) => {
+        const pct = ((cand.votes / totalForPos) * 100).toFixed(1);
+        csvContent += `${idx + 1},"${cand.name}","${cand.bio || ''}",${cand.votes},${pct}%\n`;
+      });
+      csvContent += `\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${election.title.replace(/\s+/g, '_')}_Results.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
-      <nav className="bg-white/80 backdrop-blur-xl border-b border-slate-200 px-6 py-4 sticky top-0 z-30 transition-all">
+      <nav className="bg-white/80 backdrop-blur-xl border-b border-slate-200 px-4 md:px-6 py-3 md:py-4 sticky top-0 z-30 transition-all">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4 md:gap-8">
             <button
               type="button"
               onClick={() => navigate('/admin')}
-              className="flex items-center gap-2 text-slate-500 hover:text-blue-700 transition-colors font-black text-[10px] uppercase tracking-[0.2em]"
+              className="flex items-center gap-1.5 md:gap-2 text-slate-500 hover:text-blue-700 transition-colors font-black text-[9px] md:text-[10px] uppercase tracking-[0.15em] md:tracking-[0.2em]"
             >
-              <ArrowLeft className="w-4 h-4" />
-              Exit to Console
+              <ArrowLeft className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              <span className="hidden xs:inline">Exit to Console</span>
+              <span className="xs:hidden">Back</span>
             </button>
             <div className="hidden sm:flex items-center gap-3">
-              <div className="bg-slate-950 p-1.5 rounded-xl shadow-lg shadow-black/10">
-                <Logo className="w-5 h-5" iconClassName="w-3 h-3" />
+              <div className="bg-slate-950 p-1.5 rounded-xl shadow-lg shadow-black/10 shrink-0">
+                <Logo className="w-4 h-4 md:w-5 md:h-5" iconClassName="w-2.5 h-2.5 md:w-3 md:h-3" />
               </div>
-              <p className="text-sm font-black text-slate-950 tracking-tighter uppercase italic">Intelligence Portal v2.0</p>
+              <p className="text-xs font-black text-slate-950 tracking-tighter uppercase italic truncate max-w-[120px] md:max-w-none">Intelligence Portal</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Badge variant={effectiveStatus === 'LIVE' ? 'success' : 'neutral'} className="font-black tracking-[0.2em] px-4 py-1.5 text-[9px]">
-              ELECTION STATUS: {effectiveStatus}
+            <Badge variant={effectiveStatus === 'LIVE' ? 'success' : 'neutral'} className="font-black tracking-[0.1em] md:tracking-[0.2em] px-2 md:px-4 py-1.5 text-[8px] md:text-[9px] shrink-0">
+              <span className="hidden xs:inline">STATUS:</span> {effectiveStatus}
             </Badge>
           </div>
         </div>
       </nav>
 
       <main className="max-w-6xl mx-auto px-6 pt-12 space-y-12">
-        <header className="flex flex-col md:flex-row justify-between items-end gap-8 pb-4 border-b border-slate-200">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-100">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 md:gap-8 pb-4 border-b border-slate-200">
+          <div className="space-y-2 md:space-y-3 w-full md:w-auto">
+            <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest border border-blue-100">
               <Activity className="w-3 h-3" /> Audit-Ready Performance
             </div>
-            <h1 className="text-5xl font-black text-slate-900 tracking-tight leading-none">
+            <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight md:leading-none">
               Real-time Results
             </h1>
-            <p className="text-lg text-slate-500 font-medium">
-              Monitoring data for <span className="text-slate-900 font-bold underline decoration-indigo-500/20 underline-offset-4">{election?.title}</span>
+            <p className="text-sm md:text-lg text-slate-500 font-medium">
+              Data for <span className="text-slate-900 font-bold underline decoration-indigo-500/20 underline-offset-4 truncate inline-block max-w-[200px] md:max-w-none align-bottom">{election?.title}</span>
             </p>
           </div>
-          <div className="hidden lg:flex flex-col items-end gap-1">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Last synchronized</p>
-            <p className="text-xs font-bold text-slate-900">{new Date().toLocaleTimeString()} Today</p>
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <Button onClick={handleExportCSV} variant="secondary" className="gap-2 font-black text-[10px] uppercase tracking-widest border-slate-200 flex-1 md:flex-initial justify-center h-11">
+              <FileText className="w-4 h-4" /> Export CSV
+            </Button>
+            <div className="hidden sm:flex flex-col items-end gap-1 ml-4 shrink-0">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Last synced</p>
+              <p className="text-xs font-bold text-slate-900">{new Date().toLocaleTimeString()}</p>
+            </div>
           </div>
         </header>
 
-        <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {[
             { label: 'Expected Voters', value: totalRegistered, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
             { label: 'Total Ballots', value: totalVotesCast, icon: BarChart3, color: 'text-indigo-600', bg: 'bg-indigo-50' },
@@ -204,35 +265,35 @@ const ElectionResults = () => {
               color: 'text-emerald-600',
               bg: 'bg-emerald-50'
             },
-            { label: 'Remaining Capacity', value: totalRegistered - totalVotesCast, icon: Calendar, color: 'text-orange-600', bg: 'bg-orange-50' },
+            { label: 'Remaining', value: totalRegistered - totalVotesCast, icon: Calendar, color: 'text-orange-600', bg: 'bg-orange-50' },
           ].map((stat, idx) => (
-            <Card key={idx} className="p-6 border-slate-200/60 shadow-none hover:shadow-xl hover:shadow-slate-200/40 transition-all flex flex-col justify-between">
-              <div className={`${stat.bg} ${stat.color} w-10 h-10 rounded-xl flex items-center justify-center mb-6`}>
+            <Card key={idx} className="p-4 md:p-6 border-slate-200/60 shadow-none hover:shadow-xl hover:shadow-slate-200/40 transition-all flex md:flex-col justify-between items-center md:items-start gap-4">
+              <div className={`${stat.bg} ${stat.color} w-10 h-10 rounded-xl flex items-center justify-center shrink-0 md:mb-6`}>
                 <stat.icon className="w-5 h-5" />
               </div>
-              <div>
-                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.15em] mb-1">{stat.label}</p>
-                <p className="text-3xl font-black text-slate-900 tracking-tighter tabular-nums">{stat.value.toLocaleString()}</p>
+              <div className="flex-1 md:flex-initial text-right md:text-left">
+                <p className="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-[0.15em] mb-1">{stat.label}</p>
+                <p className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter tabular-nums truncate">{stat.value.toLocaleString()}</p>
               </div>
             </Card>
           ))}
         </section>
 
-        <section className="bg-white border border-slate-200 rounded-3xl p-10 shadow-sm relative overflow-hidden group">
+        <section className="bg-white border border-slate-200 rounded-2xl md:rounded-3xl p-6 md:p-10 shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 left-0 w-2 h-full bg-blue-600"></div>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-8">
             <div className="max-w-sm">
-              <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2 uppercase">Participation Progress</h3>
-              <p className="text-sm text-slate-500 font-bold leading-relaxed">
-                Visualizing the distribution of {totalVotesCast.toLocaleString()} validated ballots out of {totalRegistered.toLocaleString()} expected credentials.
+              <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight mb-2 uppercase">Participation Progress</h3>
+              <p className="text-[11px] md:text-sm text-slate-500 font-bold leading-relaxed">
+                Visualizing distribution of <span className="text-slate-900">{totalVotesCast.toLocaleString()}</span> ballots out of <span className="text-slate-900">{totalRegistered.toLocaleString()}</span> expected credentials.
               </p>
             </div>
-            <div className="flex-1 max-w-md">
+            <div className="flex-1 w-full max-w-md">
               <div className="flex justify-between items-end mb-3">
-                <span className="text-4xl font-black text-slate-900">{Math.round(turnoutPct)}%</span>
-                <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{totalVotesCast} VALIDATED BALLOTS</span>
+                <span className="text-3xl md:text-4xl font-black text-slate-900">{Math.round(turnoutPct)}%</span>
+                <span className="text-[9px] md:text-xs font-black text-slate-400 uppercase tracking-widest">{totalVotesCast} VALIDATED</span>
               </div>
-              <div className="h-4 rounded-full bg-slate-100 overflow-hidden shadow-inner">
+              <div className="h-3 md:h-4 rounded-full bg-slate-100 overflow-hidden shadow-inner">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.min(turnoutPct, 100)}%` }}
@@ -258,9 +319,9 @@ const ElectionResults = () => {
 
             return (
               <div key={position.id} className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <h2 className="text-xs font-black text-blue-700 bg-blue-50 px-4 py-1 rounded-full uppercase tracking-[0.3em]">
-                    Position Scope: {position.title}
+                <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
+                  <h2 className="text-[10px] md:text-xs font-black text-blue-700 bg-blue-50 px-3 md:px-4 py-1.5 rounded-full uppercase tracking-[0.2em] md:tracking-[0.3em] truncate shrink-0">
+                    Scope: {position.title}
                   </h2>
                   <div className="h-px bg-slate-200 flex-grow"></div>
                 </div>
@@ -274,12 +335,12 @@ const ElectionResults = () => {
                     <ResultsChart results={candidateTotals} />
                   </Card>
 
-                  <Card className="p-8 shadow-none border-slate-200/80 bg-white rounded-3xl overflow-hidden flex flex-col">
-                    <div className="mb-8">
-                      <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Certified Tally</h4>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Breakdown by percentage</p>
+                  <Card className="p-6 md:p-8 shadow-none border-slate-200/80 bg-white rounded-2xl md:rounded-3xl overflow-hidden flex flex-col">
+                    <div className="mb-6 md:mb-8">
+                      <h4 className="text-xs md:text-sm font-black text-slate-900 uppercase tracking-widest">Certified Tally</h4>
+                      <p className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase mt-1">Breakdown by percentage</p>
                     </div>
-                    <div className="space-y-1 flex-grow overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="space-y-1 flex-grow overflow-y-auto max-h-[400px] md:max-h-none pr-1 md:pr-2 custom-scrollbar">
                       {candidateTotals.map((cand, idx) => (
                         <CandidateRow
                           key={cand.id}
@@ -289,6 +350,7 @@ const ElectionResults = () => {
                           votes={cand.votes}
                           percentage={(cand.votes / totalForPosition) * 100}
                           isWinner={idx === 0 && cand.votes > 0}
+                          photoUrl={position.candidates.find(c => c.id === cand.id)?.photo_url}
                         />
                       ))}
                     </div>
