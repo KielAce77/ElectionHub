@@ -24,6 +24,7 @@ ChartJS.register(
 const AdminDashboard = () => {
     const { user, profile, signOut, loading: authLoading } = useAuth();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const [electionToDelete, setElectionToDelete] = useState(null);
     const [stats, setStats] = useState({
         issuedTokens: 0,
         usedTokens: 0,
@@ -37,13 +38,19 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         if (authLoading) return;
+
         if (profile?.organization_id) {
+            setDataLoading(true);
             fetchDashboardData();
-        } else if (!authLoading) {
-            // If no profile after auth is done, stop loading
-            setDataLoading(false);
+        } else {
+            // If no profile yet, but auth is done, we might be waiting for ensureProfile
+            // We'll keep dataLoading true for a bit longer to avoid flicker
+            const timer = setTimeout(() => {
+                if (!profile?.organization_id) setDataLoading(false);
+            }, 2000);
+            return () => clearTimeout(timer);
         }
-    }, [authLoading, profile?.organization_id]);
+    }, [authLoading, profile?.id, profile?.organization_id]);
 
     const fetchDashboardData = async () => {
         try {
@@ -70,9 +77,6 @@ const AdminDashboard = () => {
                 electionData.forEach(ele => {
                     const start = ele.start_date ? new Date(ele.start_date) : null;
                     const end = ele.end_date ? new Date(ele.end_date) : null;
-                    const withinWindow =
-                        (!start || now >= start) &&
-                        (!end || now <= end);
 
                     const effectiveStatus =
                         now < (start || now) ? 'upcoming' :
@@ -119,6 +123,26 @@ const AdminDashboard = () => {
             toast.error('Could not load election data.');
         } finally {
             setDataLoading(false);
+        }
+    };
+
+    const handleDeleteElection = async (id) => {
+        if (!id) return;
+        try {
+            const { error } = await supabase
+                .from('elections')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            setElections(prev => prev.filter(e => e.id !== id));
+            toast.success('Election deleted successfully');
+            setElectionToDelete(null);
+            fetchDashboardData();
+        } catch (err) {
+            console.error('Delete error:', err);
+            toast.error('Failed to delete election');
         }
     };
 
@@ -287,8 +311,14 @@ const AdminDashboard = () => {
                                 {profile?.full_name || user?.user_metadata?.full_name || user?.email}
                             </p>
                         </div>
-                        <Button variant="secondary" size="sm" onClick={() => setShowLogoutModal(true)} className="text-slate-500 font-bold px-2 py-1 md:px-4 md:py-2.5 h-auto">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setShowLogoutModal(true)}
+                            className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border-red-100 transition-all font-bold px-3 md:px-5 h-10 md:h-12 flex items-center gap-2"
+                        >
                             <LogOut className="w-4 h-4 md:w-5 md:h-5" />
+                            <span className="hidden lg:inline text-xs uppercase tracking-widest">Sign Out</span>
                         </Button>
                     </div>
                 </div>
@@ -419,6 +449,18 @@ const AdminDashboard = () => {
                                                     >
                                                         <BarChart3 className="w-4 h-4 md:w-5 md:h-5" />
                                                     </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="secondary"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setElectionToDelete(election);
+                                                        }}
+                                                        className="h-10 w-10 md:h-12 md:w-12 p-0 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all border-none"
+                                                        title="Delete Election"
+                                                    >
+                                                        <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                                                    </Button>
                                                 </div>
                                                 <ChevronRight className="w-5 h-5 text-slate-300 hidden md:block" />
                                             </div>
@@ -428,6 +470,33 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* Delete Election Confirmation Modal */}
+                    {electionToDelete && (
+                        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+                            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setElectionToDelete(null)}></div>
+                            <Card className="relative w-full max-w-md bg-white shadow-2xl overflow-hidden border-none scale-100 animate-in fade-in zoom-in duration-200">
+                                <div className="p-8 text-center text-slate-900 font-medium whitespace-normal md:whitespace-nowrap">
+                                    <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                                        <Trash2 className="w-8 h-8 text-red-600" />
+                                    </div>
+                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Delete Election?</h3>
+                                    <p className="text-slate-500 font-medium mb-8">
+                                        Are you sure you want to delete <span className="text-slate-900 font-bold">"{electionToDelete.title}"</span>?
+                                        This action will permanently remove all associated candidates, tokens, and votes.
+                                    </p>
+                                    <div className="flex gap-4">
+                                        <Button variant="secondary" className="flex-1 font-bold" onClick={() => setElectionToDelete(null)}>
+                                            Keep Election
+                                        </Button>
+                                        <Button className="flex-1 bg-red-600 hover:bg-red-700 font-bold text-white shadow-lg shadow-red-600/20" onClick={() => handleDeleteElection(electionToDelete.id)}>
+                                            Delete Permanently
+                                        </Button>
+                                    </div>
+                                </div>
+                            </Card>
+                        </div>
+                    )}
 
                     <div className="space-y-8">
                         <Card className="bg-slate-950 border-none text-white p-8 overflow-hidden relative">

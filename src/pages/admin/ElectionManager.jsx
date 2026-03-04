@@ -3,7 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Card, Button, Input, Badge } from '../../components/ui';
-import { ArrowLeft, Save, Plus, Trash2, Image as ImageIcon, Loader2, Settings, ListCheck, UserPlus, Ticket, Send, LogOut, Copy, Check } from 'lucide-react';
+import {
+    Loader2, Save, Plus, Trash2, Calendar, Users,
+    Settings, Layout, ArrowLeft, Image as ImageIcon,
+    Type, Globe, Shield, LogOut, Ticket, Download,
+    Copy, Check, BarChart3, ChevronRight
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ElectionManager = () => {
@@ -458,13 +463,40 @@ const ElectionManager = () => {
                                 onClick={() => navigate(`/admin/results/${id}/`)}
                                 className="hidden sm:flex gap-2 px-4 h-10 md:h-12 border-indigo-200 text-indigo-700 font-bold text-xs uppercase"
                             >
-                                <BarChart3 className="w-4 h-4" /> Results
+                                <BarChart3 className="w-4 h-4" /> <span className="hidden lg:inline">Results</span>
+                            </Button>
+                        )}
+                        {isEditing && (
+                            <Button
+                                variant="secondary"
+                                onClick={async () => {
+                                    if (window.confirm(`Are you sure you want to delete this election? This will permanently remove all candidates and data.`)) {
+                                        setSaving(true);
+                                        const { error } = await supabase.from('elections').delete().eq('id', id);
+                                        if (error) {
+                                            toast.error('Failed to delete');
+                                            setSaving(false);
+                                        } else {
+                                            toast.success('Election deleted');
+                                            navigate('/admin/');
+                                        }
+                                    }
+                                }}
+                                className="h-10 w-10 md:h-12 md:w-12 p-0 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all border-none"
+                                title="Delete Election"
+                            >
+                                <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
                             </Button>
                         )}
                         <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2 px-4 md:px-8 h-10 md:h-12 shadow-blue-700/20 text-[10px] md:text-sm font-black uppercase tracking-widest">
                             <Save className="w-4 h-4" /> <span>{saving ? 'Saving...' : 'Save'}</span>
                         </Button>
-                        <Button variant="secondary" size="sm" onClick={() => setShowLogoutModal(true)} className="text-slate-500 font-bold p-2 md:p-3 h-10 w-10 md:h-12 md:w-12">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setShowLogoutModal(true)}
+                            className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border-red-100 transition-all font-bold p-2 md:p-3 h-10 w-10 md:h-12 md:w-12 shadow-sm"
+                        >
                             <LogOut className="w-4 h-4 md:w-5 md:h-5" />
                         </Button>
                     </div>

@@ -72,17 +72,33 @@ const ElectionResults = () => {
   const [votesByCandidate, setVotesByCandidate] = useState({});
   const navigate = useNavigate();
   const query = useQuery();
+  const [showLogoutModal, setShowLogoutModal] = useState(false); // Added for logout modal
 
   useEffect(() => {
     if (authLoading) return;
-    fetchResults();
-  }, [authLoading, profile?.organization_id, electionId, query.get('electionId')]);
+
+    if (profile?.organization_id) {
+      setLoading(true); // Use setLoading for this component
+      fetchResults();
+    } else {
+      // If no profile yet, but auth is done, we might be waiting for ensureProfile
+      // We'll keep loading true for a bit longer to avoid flicker
+      const timer = setTimeout(() => {
+        if (!profile?.organization_id) setLoading(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [authLoading, profile?.id, profile?.organization_id, electionId, query.get('electionId')]); // Added electionId and query.get('electionId') to dependencies
 
   const fetchResults = async () => {
     try {
       setLoading(true);
       const orgId = profile?.organization_id;
-      if (!orgId) return;
+
+      if (!orgId) {
+        if (!authLoading) setLoading(false);
+        return;
+      }
 
       const requestedElectionId = electionId || query.get('electionId');
 
@@ -202,6 +218,7 @@ const ElectionResults = () => {
       csvContent += `Rank,Candidate,Bio,Votes,Percentage\n`;
 
       const candidateTotals = pos.candidates.map((c) => ({
+        id: c.id,
         name: c.full_name,
         votes: votesByCandidate[c.id] || 0,
         bio: c.bio
@@ -252,6 +269,16 @@ const ElectionResults = () => {
             <Badge variant={effectiveStatus === 'LIVE' ? 'success' : 'neutral'} className="font-black tracking-[0.1em] md:tracking-[0.2em] px-2 md:px-4 py-1.5 text-[8px] md:text-[9px] shrink-0">
               <span className="hidden xs:inline">STATUS:</span> {effectiveStatus}
             </Badge>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowLogoutModal(true)}
+              className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border-red-100 transition-all font-bold px-3 md:px-4 h-10 w-10 md:h-11 md:w-auto flex items-center gap-2"
+              title="Log Out"
+            >
+              <LogOut className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="hidden md:inline uppercase text-[10px] tracking-widest">Sign Out</span>
+            </Button>
           </div>
         </div>
       </nav>
@@ -387,6 +414,33 @@ const ElectionResults = () => {
           })}
         </section>
       </main>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
+          <Card className="relative w-full max-w-md bg-white shadow-2xl overflow-hidden border-none scale-100 animate-in fade-in zoom-in duration-200">
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <LogOut className="w-8 h-8 text-red-600" />
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Sign Out?</h3>
+              <p className="text-slate-500 font-medium mb-8">Are you sure you want to end your administrative session? You will need to log in again to access the dashboard.</p>
+              <div className="flex gap-4">
+                <Button variant="secondary" className="flex-1 font-bold" onClick={() => setShowLogoutModal(false)}>
+                  Stay Logged In
+                </Button>
+                <Button className="flex-1 bg-red-600 hover:bg-red-700 font-bold text-white shadow-lg shadow-red-600/20" onClick={() => {
+                  signOut();
+                  navigate('/login');
+                }}>
+                  Sign Me Out
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
