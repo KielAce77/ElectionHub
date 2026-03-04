@@ -7,7 +7,8 @@ import {
     Loader2, Save, Plus, Trash2, Calendar, Users,
     Settings, Layout, ArrowLeft, Image as ImageIcon,
     Type, Globe, Shield, LogOut, Ticket, Download,
-    Copy, Check, BarChart3, ChevronRight
+    Copy, Check, BarChart3, ChevronRight, ListCheck,
+    UserPlus, Send
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 

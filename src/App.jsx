@@ -117,18 +117,12 @@ function App() {
                 <ElectionResults />
               </ProtectedRoute>
             } />
-            {/* Handle trailing slash case via the route itself for robustness */}
-            <Route path="/admin/results/:electionId/" element={
-              <ProtectedRoute>
-                <ElectionResults />
-              </ProtectedRoute>
-            } />
             <Route path="/admin/elections/" element={
               <ProtectedRoute>
                 <ElectionManager />
               </ProtectedRoute>
             } />
-            <Route path="/admin/elections/:id/" element={
+            <Route path="/admin/elections/:id" element={
               <ProtectedRoute>
                 <ElectionManager />
               </ProtectedRoute>
