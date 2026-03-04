@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Card, Button, Badge, Logo } from '../../components/ui';
-import { Loader2, BarChart3, Activity, ArrowLeft, TrendingUp, Users, Award, Calendar } from 'lucide-react';
+import { Loader2, BarChart3, Activity, ArrowLeft, TrendingUp, Users, Award, Calendar, LogOut } from 'lucide-react';
 import ResultsChart from '../../components/ResultsChart';
 import { motion } from 'framer-motion';
 

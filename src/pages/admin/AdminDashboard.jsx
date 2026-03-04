@@ -6,7 +6,7 @@ import { Card, Button, Badge, Logo } from '../../components/ui';
 import {
     Ticket, Vote, Calendar, TrendingUp, Plus,
     ChevronRight, BarChart3, LogOut, ShieldCheck,
-    FileText, Activity, Layers, ArrowUpRight, Loader2
+    FileText, Activity, Layers, ArrowUpRight, Loader2, Trash2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
