@@ -8,7 +8,6 @@ export const AuthProvider = ({ children }) => {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Implementation of a safeguard to ensure authentication requests do not indefinitely stall the user interface.
     const withTimeout = async (promise, label, ms = 8000) => {
         const timeout = new Promise((_, reject) =>
             setTimeout(() => reject(new Error(`${label} timed out`)), ms)
@@ -17,14 +16,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const fetchProfile = async (userId) => {
-        // Monitor exactly when profile retrieval is triggered and identify the associated user.
-        console.log('fetchProfile called with uid:', userId);
-
-        if (!userId) {
-            console.log('fetchProfile raw response: skipped (no userId provided)');
-            console.log('Setting profile to:', null);
-            return null;
-        }
+        if (!userId) return null;
 
         try {
             const { data, error } = await supabase
@@ -33,21 +25,13 @@ export const AuthProvider = ({ children }) => {
                 .eq('id', userId)
                 .single();
 
-            // Verify the information returned from the database.
-            console.log('fetchProfile raw response:', { data, error });
-
             if (error) {
                 console.warn('Auth: Profile retrieval note:', error.code, error.message);
-                console.log('Setting profile to:', null);
                 return null;
             }
-
-            // Prepare the profile information to be used within the application.
-            console.log('Setting profile to:', data);
             return data;
         } catch (err) {
             console.error('Auth: Profile retrieval error:', err);
-            console.log('Setting profile to:', null);
             return null;
         }
     };
@@ -55,17 +39,13 @@ export const AuthProvider = ({ children }) => {
     const ensureProfile = async (currentUser) => {
         if (!currentUser) return null;
 
-        // 1. Attempt to retrieve any existing profile record.
         let profileData = await fetchProfile(currentUser.id);
-
         const metaOrgName = currentUser.user_metadata?.org_name;
         const metaFullName = currentUser.user_metadata?.full_name;
         const resolvedFullName = metaFullName || profileData?.full_name || 'Administrator';
         const fallbackOrgName = metaOrgName || 'Primary Organization';
 
-        // 2. Automatically assign an organization to the profile if it is currently missing.
         if (profileData && !profileData.organization_id) {
-            console.log('Auth: Repairing existing profile without organization_id...');
             try {
                 const { data: org, error: orgError } = await supabase
                     .from('organizations')
@@ -86,8 +66,6 @@ export const AuthProvider = ({ children }) => {
                     .single();
 
                 if (patchError) throw patchError;
-
-                console.log('Auth: Profile repair successful.');
                 return patchedProfile;
             } catch (err) {
                 console.error('Auth: Profile repair failed:', err.message);
@@ -95,11 +73,8 @@ export const AuthProvider = ({ children }) => {
             }
         }
 
-        // 3. Automatically create a new profile if no existing record is found.
         if (!profileData) {
-            console.log('Auth: Profile missing. Attempting auto-creation...');
             try {
-                // 1. Create Organization
                 const { data: org, error: orgError } = await supabase
                     .from('organizations')
                     .insert({ name: fallbackOrgName })
@@ -108,7 +83,6 @@ export const AuthProvider = ({ children }) => {
 
                 if (orgError) throw orgError;
 
-                // 2. Create Profile
                 const { data: newProfile, error: profError } = await supabase
                     .from('profiles')
                     .insert({
@@ -122,28 +96,24 @@ export const AuthProvider = ({ children }) => {
                     .single();
 
                 if (profError) throw profError;
-                console.log('Auth: Profile auto-created successfully.');
                 return newProfile;
             } catch (err) {
                 console.error('Auth: Profile recovery failed:', err.message);
                 return null;
             }
         }
-
-        // 4. Return whatever we have (may legitimately have no org_name metadata)
         return profileData;
     };
 
     useEffect(() => {
         let isMounted = true;
 
-        // Synchronize local authentication state with the remote server.
         const syncAuth = async () => {
             try {
                 const { data: { session }, error: sessionError } = await withTimeout(
                     supabase.auth.getSession(),
                     'supabase.auth.getSession',
-                    5000 // Shorter timeout for initial check
+                    5000
                 );
 
                 if (sessionError) throw sessionError;
@@ -153,7 +123,6 @@ export const AuthProvider = ({ children }) => {
                 setUser(currentUser);
 
                 if (currentUser) {
-                    // Fast path: try cache first
                     const cached = typeof window !== 'undefined' ? window.sessionStorage.getItem('electionhub-profile') : null;
                     if (cached) {
                         try {
@@ -165,7 +134,6 @@ export const AuthProvider = ({ children }) => {
                         } catch (e) { }
                     }
 
-                    // Background sync of profile data
                     const profileData = await ensureProfile(currentUser);
                     if (isMounted) {
                         setProfile(profileData);
@@ -191,8 +159,6 @@ export const AuthProvider = ({ children }) => {
         syncAuth();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            // Trace every auth event coming from Supabase
-            console.log('Auth event received:', event);
             if (!isMounted) return;
 
             if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
@@ -200,12 +166,8 @@ export const AuthProvider = ({ children }) => {
                 setUser(currentUser);
 
                 if (currentUser) {
-                    // Only block on loading if we don't have a profile yet and haven't finished syncAuth
-                    // This prevents stalling on tab focus if profile is already in state
                     const needsProfileFetch = !profile || profile.id !== currentUser.id;
-
                     if (needsProfileFetch) {
-                        // Attempt to fetch profile without blocking indefinitely
                         ensureProfile(currentUser).then(p => {
                             if (isMounted) {
                                 setProfile(p);
@@ -242,15 +204,6 @@ export const AuthProvider = ({ children }) => {
         };
     }, []);
 
-    // Log authentication status updates to ensure consistent state across the application.
-    useEffect(() => {
-        console.log('AuthContext state changed:', {
-            user,
-            profile,
-            loading
-        });
-    }, [user, profile, loading]);
-
     const signUp = async (email, password, metadata) => {
         const { data, error } = await supabase.auth.signUp({
             email,
@@ -268,12 +221,12 @@ export const AuthProvider = ({ children }) => {
     };
 
     const signOut = async () => {
-        // Promptly clear local user information to ensure an immediate transition.
         setUser(null);
         setProfile(null);
         try {
             if (typeof window !== 'undefined') {
                 window.localStorage.removeItem('electionhub-auth-token');
+                window.sessionStorage.removeItem('electionhub-profile');
             }
         } catch (storageErr) {
             console.warn('Auth: Failed to clear local session storage', storageErr);
@@ -283,12 +236,10 @@ export const AuthProvider = ({ children }) => {
             await supabase.auth.signOut();
         } catch (err) {
             console.error('Auth: signOut failed', err);
-            // We already cleared local state; no need to rethrow.
         }
     };
 
     const resetPassword = async (email) => {
-        // Send a recovery link to the user's email address.
         const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}/reset-password`,
         });
@@ -297,7 +248,6 @@ export const AuthProvider = ({ children }) => {
     };
 
     const updatePassword = async (newPassword) => {
-        // Apply the new password to the currently authenticated user session.
         const { data, error } = await supabase.auth.updateUser({
             password: newPassword
         });
@@ -306,7 +256,6 @@ export const AuthProvider = ({ children }) => {
     };
 
     const verifyRecoveryOtp = async (email, token) => {
-        // Verify the 6-digit code sent to the user's email.
         const { data, error } = await supabase.auth.verifyOtp({
             email,
             token,
@@ -328,7 +277,6 @@ export const AuthProvider = ({ children }) => {
         updatePassword,
         verifyRecoveryOtp
     };
-    console.log('AuthProvider context value:', contextValue);
 
     return (
         <AuthContext.Provider value={contextValue}>
