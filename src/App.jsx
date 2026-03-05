@@ -12,10 +12,11 @@ import PublicResults from './pages/voting/PublicResults';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ElectionManager from './pages/admin/ElectionManager';
 import ElectionResults from './pages/admin/ElectionResults';
+import MobileNav from './components/MobileNav';
 import { Loader2 } from 'lucide-react';
 
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, profile } = useAuth();
 
   if (loading) {
     return (
@@ -30,7 +31,26 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  // If we have a user but no profile yet, and we're not loading, 
+  // it might be a transient state. We wait a tiny bit or show a specific syncing state
+  // to prevent the "blank page until refresh" issue.
+  if (user && !profile) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 text-blue-700 animate-spin" />
+          <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">Syncing Profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {children}
+      <MobileNav />
+    </>
+  );
 };
 
 const RootRedirect = () => {
@@ -79,7 +99,17 @@ function App() {
       <Toaster
         position="top-right"
         toastOptions={{
-          duration: 2500
+          duration: 2500,
+          style: {
+            borderRadius: '12px',
+            background: '#0f172a',
+            color: '#fff',
+            fontSize: '12px',
+            fontWeight: '700',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            padding: '16px 24px',
+          }
         }}
       />
       <Router>
@@ -141,3 +171,4 @@ function App() {
 }
 
 export default App;
+

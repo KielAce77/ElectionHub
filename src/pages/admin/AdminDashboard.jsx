@@ -39,16 +39,23 @@ const AdminDashboard = () => {
     useEffect(() => {
         if (authLoading) return;
 
+        // If we have an organization ID, let's go.
         if (profile?.organization_id) {
             setDataLoading(true);
             fetchDashboardData();
-        } else {
-            // If no profile yet, but auth is done, we might be waiting for ensureProfile
-            // We'll keep dataLoading true for a bit longer to avoid flicker
+        } else if (profile) {
+            // If we have a profile but no org ID, wait a bit for repair/sync logic in AuthContext to finish
             const timer = setTimeout(() => {
-                if (!profile?.organization_id) setDataLoading(false);
-            }, 2000);
+                if (profile?.organization_id) {
+                    fetchDashboardData();
+                } else {
+                    setDataLoading(false);
+                }
+            }, 1500);
             return () => clearTimeout(timer);
+        } else if (!authLoading) {
+            // Auth is done and no profile?
+            setDataLoading(false);
         }
     }, [authLoading, profile?.id, profile?.organization_id]);
 
@@ -61,7 +68,8 @@ const AdminDashboard = () => {
                     *,
                     voting_tokens (id, is_used, used_at)
                 `)
-                .eq('organization_id', profile.organization_id);
+                .eq('organization_id', profile.organization_id)
+                .order('created_at', { ascending: false });
 
             if (electionError) throw electionError;
 
@@ -285,7 +293,7 @@ const AdminDashboard = () => {
     return (
         <div className="min-h-screen bg-slate-50">
             {/* Administrative Navigation */}
-            <nav className="bg-white border-b border-slate-200 px-4 md:px-6 py-4 sticky top-0 z-20">
+            <nav className="bg-white border-b border-slate-200 px-4 md:px-6 py-4 sticky top-0 z-20 mobile-glass-header">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-4 md:gap-6">
                         <button
@@ -296,10 +304,10 @@ const AdminDashboard = () => {
                             }}
                             className="flex items-center gap-2 md:gap-3 hover:opacity-90 transition-opacity"
                         >
-                            <div className="bg-slate-900 p-1.5 rounded-lg text-white shrink-0">
+                            <div className="bg-blue-700 p-1.5 rounded-lg text-white shrink-0 shadow-lg shadow-blue-500/20">
                                 <Logo className="w-4 h-4 md:w-5 md:h-5" iconClassName="w-2.5 h-2.5 md:w-3 md:h-3" />
                             </div>
-                            <span className="font-extrabold text-slate-900 tracking-tight text-lg md:text-xl uppercase truncate max-w-[120px] md:max-w-none">
+                            <span className="font-black text-slate-900 tracking-tighter text-lg md:text-xl uppercase truncate max-w-[140px] md:max-w-none">
                                 Admin Console
                             </span>
                         </button>
@@ -315,7 +323,7 @@ const AdminDashboard = () => {
                             variant="secondary"
                             size="sm"
                             onClick={() => setShowLogoutModal(true)}
-                            className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border-red-100 transition-all font-bold px-3 md:px-5 h-10 md:h-12 flex items-center gap-2"
+                            className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border-red-100 transition-all font-bold px-3 md:px-5 h-10 md:h-12 flex items-center gap-2 md:rounded-xl"
                         >
                             <LogOut className="w-4 h-4 md:w-5 md:h-5" />
                             <span className="hidden lg:inline text-xs uppercase tracking-widest">Sign Out</span>
@@ -327,50 +335,47 @@ const AdminDashboard = () => {
             <main className="max-w-7xl mx-auto px-6 py-10">
                 <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-6">
                     <div className="space-y-1 w-full md:w-auto">
-                        <div className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-[0.2em]">
+                        <div className="flex items-center gap-2 text-blue-600 font-black text-[10px] uppercase tracking-[0.2em]">
                             <Activity className="w-3.5 h-3.5" /> Operations Dashboard
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Election Intelligence</h1>
-                        <p className="text-sm md:text-slate-500 font-medium whitespace-normal md:whitespace-nowrap">
-                            Managing organization:{' '}
-                            <span className="text-indigo-700 font-black">
-                                {profile?.organizations?.name}
-                            </span>
+                        <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter">Election Intelligence</h1>
+                        <p className="text-sm text-slate-500 font-medium md:whitespace-nowrap">
+                            Managing <span className="text-indigo-700 font-black uppercase tracking-tight">{profile?.organizations?.name || 'Your Organization'}</span>
                         </p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                        <Button className="gap-2 w-full sm:px-8 h-[52px] shadow-xl shadow-blue-700/20" onClick={() => navigate('/admin/elections/')}>
-                            <Plus className="w-4 h-4" /> Start New Election
+                        <Button className="gap-2 w-full sm:px-8 h-14 md:h-[52px] shadow-xl shadow-blue-700/20 text-xs font-black uppercase tracking-widest md:rounded-xl" onClick={() => navigate('/admin/elections/')}>
+                            <Plus className="w-5 h-5 md:w-4 md:h-4" /> Start New Election
                         </Button>
                         <Button
-                            className="gap-2 w-full sm:px-8 h-[52px] font-black text-xs uppercase tracking-[0.2em] bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-600/20 text-white"
+                            className="gap-2 w-full sm:px-8 h-14 md:h-[52px] font-black text-xs uppercase tracking-[0.15em] bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-600/20 text-white md:rounded-xl"
                             onClick={() => navigate('/admin/results/')}
                         >
-                            <BarChart3 className="w-4 h-4" /> View Results
+                            <BarChart3 className="w-5 h-5 md:w-4 md:h-4" /> View Results
                         </Button>
                     </div>
                 </header>
 
                 {/* Operational Statistics */}
-                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-12">
                     {[
-                        { label: 'Tokens Issued', value: stats.issuedTokens, icon: Ticket, trend: 'SECURE' },
-                        { label: 'Active Elections', value: stats.activeElections, icon: Activity, trend: 'STABLE' },
-                        { label: 'Turnout (Used)', value: stats.usedTokens, icon: Vote, trend: 'REAL-TIME' },
-                        { label: 'Participation %', value: stats.turnout, icon: TrendingUp, trend: 'TRACKED' },
+                        { label: 'Tokens', value: stats.issuedTokens, icon: Ticket, trend: 'SECURE', color: 'text-blue-700' },
+                        { label: 'Active', value: stats.activeElections, icon: Activity, trend: 'STABLE', color: 'text-emerald-600' },
+                        { label: 'Ballots', value: stats.usedTokens, icon: Vote, trend: 'LIVE', color: 'text-indigo-600' },
+                        { label: 'Turnout', value: stats.turnout, icon: TrendingUp, trend: 'TRACKED', color: 'text-orange-600' },
                     ].map((stat, i) => (
-                        <Card key={i} className="flex flex-col justify-between p-6 shadow-none border-slate-200">
+                        <Card key={i} className="flex flex-col justify-between p-5 md:p-6 shadow-none border-slate-200 mobile-stats-card">
                             <div className="flex justify-between items-start mb-6">
-                                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                                    <stat.icon className="w-5 h-5 text-blue-700" />
+                                <div className="bg-slate-50 p-2 rounded-lg md:rounded-xl border border-slate-100">
+                                    <stat.icon className={`w-4 h-4 md:w-5 md:h-5 ${stat.color}`} />
                                 </div>
-                                <span className="text-[9px] font-black text-slate-400 border border-slate-200 px-2 py-0.5 rounded-full tracking-widest">
+                                <span className={`hidden xs:inline text-[8px] font-black border px-2 py-0.5 rounded-full tracking-widest ${i % 2 === 0 ? 'text-blue-500 border-blue-100 bg-blue-50/50' : 'text-slate-400 border-slate-200'}`}>
                                     {stat.trend}
                                 </span>
                             </div>
                             <div>
-                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.1em]">{stat.label}</p>
-                                <p className="text-3xl font-black text-slate-900 mt-1 tabular-nums tracking-tighter">{stat.value}</p>
+                                <p className="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-[0.1em]">{stat.label}</p>
+                                <p className="text-2xl md:text-3xl font-black text-slate-900 mt-0.5 tabular-nums tracking-tighter leading-none">{stat.value}</p>
                             </div>
                         </Card>
                     ))}
@@ -378,27 +383,30 @@ const AdminDashboard = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     <div className="lg:col-span-2 space-y-12">
-                        <Card className="shadow-none border-slate-200 p-8">
+                        <Card className="shadow-none border-slate-200 p-6 md:p-8">
                             <div className="flex justify-between items-center mb-10">
                                 <div>
-                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                                         <BarChart3 className="w-4 h-4 text-blue-700" />
                                         Voting Activity
                                     </h3>
-                                    <p className="text-xs text-slate-500 font-medium mt-1">Timeline of cryptographic token redemptions</p>
+                                    <p className="text-[10px] text-slate-500 font-bold mt-1 uppercase tracking-tight">Timeline of cryptographic redemptions</p>
                                 </div>
-                                <Badge variant="primary">LIVE ANALYTICS</Badge>
+                                <Badge variant="primary" className="hidden xs:block">LIVE ANALYTICS</Badge>
                             </div>
-                            <div className="h-[300px] relative">
+                            <div className="h-[250px] md:h-[300px] relative">
                                 <Line data={chartData} options={chartOptions} />
                             </div>
                         </Card>
 
                         <div className="space-y-6">
-                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2 mb-2">
-                                <Layers className="w-4 h-4 text-blue-700" />
-                                Election Registry
-                            </h3>
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                    <Layers className="w-4 h-4 text-blue-700" />
+                                    Election Registry
+                                </h3>
+                                <button className="text-[10px] font-black text-blue-700 uppercase tracking-widest md:hidden">View All</button>
+                            </div>
                             <div className="space-y-4">
                                 {elections.map((election) => {
                                     const usedCount = election.voting_tokens?.filter(t => t.is_used).length || 0;
@@ -415,27 +423,31 @@ const AdminDashboard = () => {
                                                 'active';
 
                                     return (
-                                        <Card key={election.id} className="hover:bg-slate-50/50 transition-all p-4 md:p-6 flex flex-col md:flex-row md:items-center justify-between shadow-none border-slate-200 cursor-pointer gap-4" onClick={() => navigate(`/admin/elections/${election.id}`)}>
-                                            <div className="flex items-start md:items-center gap-4 md:gap-6">
-                                                <div className={`w-1 md:w-1.5 h-10 md:h-12 rounded-full mt-1 md:mt-0 ${effectiveStatus === 'active' ? 'bg-emerald-500 shadow-md shadow-emerald-500/20' : effectiveStatus === 'upcoming' ? 'bg-blue-200' : 'bg-slate-300'}`} />
+                                        <div
+                                            key={election.id}
+                                            className="pro-card hover:bg-slate-50/50 transition-all p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between cursor-pointer gap-4 election-item"
+                                            onClick={() => navigate(`/admin/elections/${election.id}`)}
+                                        >
+                                            <div className="flex items-center gap-4 md:gap-6">
+                                                <div className={`w-1 md:w-1.5 h-12 md:h-12 rounded-full ${effectiveStatus === 'active' ? 'bg-emerald-500 shadow-md shadow-emerald-500/20 animate-pulse' : effectiveStatus === 'upcoming' ? 'bg-blue-400' : 'bg-slate-300'}`} />
                                                 <div className="min-w-0 flex-1">
-                                                    <h4 className="font-black text-slate-900 text-base md:text-xl uppercase tracking-tight truncate">{election.title}</h4>
-                                                    <div className="flex flex-wrap items-center gap-x-2 md:gap-x-4 gap-y-1 mt-1 text-slate-500 font-bold text-[9px] md:text-xs uppercase tracking-wider">
+                                                    <h4 className="font-black text-slate-900 text-lg md:text-xl uppercase tracking-tighter truncate leading-tight mb-1">{election.title}</h4>
+                                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-slate-500 font-bold text-[9px] md:text-xs uppercase tracking-tight">
                                                         <span className="flex items-center gap-1">
-                                                            <Ticket className="w-2.5 h-2.5 md:w-3 md:h-3" /> {usedCount}/{total} <span className="hidden sm:inline">Tokens</span>
+                                                            <Ticket className="w-2.5 h-2.5" /> {usedCount}/{total} <span className="mobile-hide">Tokens</span>
                                                         </span>
-                                                        <span className="text-slate-300 hidden sm:inline">•</span>
+                                                        <span className="text-slate-300">•</span>
                                                         <span className="flex items-center gap-1 text-blue-700">
-                                                            <TrendingUp className="w-2.5 h-2.5 md:w-3 md:h-3" /> {electionTurnout}% <span className="hidden sm:inline">Turnout</span>
+                                                            <TrendingUp className="w-2.5 h-2.5" /> {electionTurnout}% <span className="mobile-hide">Turnout</span>
                                                         </span>
-                                                        <span className="text-slate-300 hidden sm:inline">•</span>
-                                                        <span className="truncate">Ends {new Date(election.end_date).toLocaleDateString()}</span>
+                                                        <span className="text-slate-300 mobile-hide">•</span>
+                                                        <span className="truncate mobile-hide">Ends {new Date(election.end_date).toLocaleDateString()}</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center justify-between md:justify-end gap-3 pt-2 md:pt-0 border-t border-slate-100 md:border-none">
+                                            <div className="flex items-center justify-between md:justify-end gap-3 pt-3 md:pt-0 border-t border-slate-50 md:border-none">
                                                 <div className="flex items-center gap-2">
-                                                    <Badge variant={effectiveStatus === 'active' ? 'success' : 'neutral'} className="text-[8px] md:text-[10px]">
+                                                    <Badge variant={effectiveStatus === 'active' ? 'success' : 'neutral'} className="text-[8px] md:text-[9px] font-black">
                                                         {effectiveStatus.toUpperCase()}
                                                     </Badge>
                                                     <Button
@@ -444,10 +456,10 @@ const AdminDashboard = () => {
                                                             e.stopPropagation();
                                                             navigate(`/admin/results/${election.id}/`);
                                                         }}
-                                                        className="h-10 w-10 md:h-12 md:w-12 p-0 flex items-center justify-center rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 md:ring-4 md:ring-indigo-50"
+                                                        className="h-11 w-11 md:h-12 md:w-12 p-0 flex items-center justify-center rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20"
                                                         title="View Results"
                                                     >
-                                                        <BarChart3 className="w-4 h-4 md:w-5 md:h-5" />
+                                                        <BarChart3 className="w-5 h-5 md:w-5 md:h-5" />
                                                     </Button>
                                                     <Button
                                                         size="sm"
@@ -456,15 +468,15 @@ const AdminDashboard = () => {
                                                             e.stopPropagation();
                                                             setElectionToDelete(election);
                                                         }}
-                                                        className="h-10 w-10 md:h-12 md:w-12 p-0 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all border-none"
+                                                        className="h-11 w-11 md:h-12 md:w-12 p-0 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all border-none"
                                                         title="Delete Election"
                                                     >
-                                                        <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                                                        <Trash2 className="w-5 h-5 md:w-5 md:h-5" />
                                                     </Button>
                                                 </div>
                                                 <ChevronRight className="w-5 h-5 text-slate-300 hidden md:block" />
                                             </div>
-                                        </Card>
+                                        </div>
                                     );
                                 })}
                             </div>
@@ -473,24 +485,24 @@ const AdminDashboard = () => {
 
                     {/* Delete Election Confirmation Modal */}
                     {electionToDelete && (
-                        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
-                            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setElectionToDelete(null)}></div>
-                            <Card className="relative w-full max-w-md bg-white shadow-2xl overflow-hidden border-none scale-100 animate-in fade-in zoom-in duration-200">
-                                <div className="p-8 text-center text-slate-900 font-medium whitespace-normal md:whitespace-nowrap">
+                        <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center">
+                            <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setElectionToDelete(null)}></div>
+                            <Card className="relative w-full max-w-md bg-white shadow-2xl overflow-hidden border-none rounded-t-3xl sm:rounded-3xl animate-in slide-in-from-bottom duration-300">
+                                <div className="p-8 text-center">
                                     <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                                         <Trash2 className="w-8 h-8 text-red-600" />
                                     </div>
                                     <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Delete Election?</h3>
                                     <p className="text-slate-500 font-medium mb-8">
                                         Are you sure you want to delete <span className="text-slate-900 font-bold">"{electionToDelete.title}"</span>?
-                                        This action will permanently remove all associated candidates, tokens, and votes.
+                                        This action will permanently remove all associated candidates, tokens, and records.
                                     </p>
-                                    <div className="flex gap-4">
-                                        <Button variant="secondary" className="flex-1 font-bold" onClick={() => setElectionToDelete(null)}>
-                                            Keep Election
-                                        </Button>
-                                        <Button className="flex-1 bg-red-600 hover:bg-red-700 font-bold text-white shadow-lg shadow-red-600/20" onClick={() => handleDeleteElection(electionToDelete.id)}>
+                                    <div className="flex flex-col gap-3">
+                                        <Button className="w-full h-14 bg-red-600 hover:bg-red-700 font-black text-xs uppercase tracking-widest text-white shadow-xl shadow-red-600/20 rounded-xl" onClick={() => handleDeleteElection(electionToDelete.id)}>
                                             Delete Permanently
+                                        </Button>
+                                        <Button variant="secondary" className="w-full h-14 font-black text-xs uppercase tracking-widest rounded-xl" onClick={() => setElectionToDelete(null)}>
+                                            Cancel
                                         </Button>
                                     </div>
                                 </div>
@@ -499,46 +511,49 @@ const AdminDashboard = () => {
                     )}
 
                     <div className="space-y-8">
-                        <Card className="bg-slate-950 border-none text-white p-8 overflow-hidden relative">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                        <Card className="bg-slate-950 border-none text-white p-8 overflow-hidden relative rounded-2xl md:rounded-3xl">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 rounded-full -mr-16 -mt-16 blur-3xl"></div>
                             <h3 className="font-black text-xs uppercase tracking-widest text-slate-500 mb-8 relative z-10">
-                                Organization Snapshot
+                                Org Snapshot
                             </h3>
                             <div className="space-y-6 relative z-10">
                                 <div className="flex justify-between items-center pb-4 border-b border-white/5">
-                                    <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Active Elections</span>
-                                    <span className="text-sm font-black text-white">
+                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">Active Events</span>
+                                    <span className="text-lg font-black text-white italic tabular-nums">
                                         {stats.activeElections}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center pb-4 border-b border-white/5">
-                                    <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Tokens Issued</span>
-                                    <span className="text-sm font-black text-white">
+                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">Total Tokens</span>
+                                    <span className="text-lg font-black text-white tabular-nums">
                                         {stats.issuedTokens}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Total Votes Cast</span>
-                                    <span className="text-sm font-black text-emerald-300">
+                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">Verified Votes</span>
+                                    <span className="text-lg font-black text-emerald-400 tabular-nums">
                                         {stats.usedTokens}
                                     </span>
                                 </div>
                             </div>
                         </Card>
 
-                        <Card className="shadow-none border-slate-200 bg-white p-8">
-                            <h4 className="font-black text-xs uppercase tracking-widest text-slate-900 mb-6">Security Guidelines</h4>
-                            <ul className="space-y-5">
+                        <Card className="shadow-none border-slate-200 bg-white p-8 rounded-2xl md:rounded-3xl">
+                            <h4 className="font-black text-[10px] uppercase tracking-[0.2em] text-slate-900 mb-6 flex items-center gap-2">
+                                <ShieldCheck className="w-4 h-4 text-blue-700" />
+                                Security Protocols
+                            </h4>
+                            <ul className="space-y-6">
                                 <li className="flex gap-4 group">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-700 mt-1.5 flex-shrink-0 group-hover:scale-150 transition-transform"></div>
-                                    <p className="text-xs text-slate-500 leading-relaxed font-bold uppercase tracking-tight">
-                                        Tokens are strictly single-use and cannot be partially redeemed.
+                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-700 mt-1.5 shrink-0"></div>
+                                    <p className="text-[10px] text-slate-500 leading-relaxed font-bold uppercase tracking-tight">
+                                        Tokens are strictly single-use and non-transferable.
                                     </p>
                                 </li>
                                 <li className="flex gap-4 group">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-700 mt-1.5 flex-shrink-0 group-hover:scale-150 transition-transform"></div>
-                                    <p className="text-xs text-slate-500 leading-relaxed font-bold uppercase tracking-tight">
-                                        Voters must be provided their unique 12-char code via secure channels.
+                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-700 mt-1.5 shrink-0"></div>
+                                    <p className="text-[10px] text-slate-500 leading-relaxed font-bold uppercase tracking-tight">
+                                        Ensure voters receive their 12-char codes via encrypted channels.
                                     </p>
                                 </li>
                             </ul>
@@ -549,21 +564,21 @@ const AdminDashboard = () => {
 
             {/* Logout Confirmation Modal */}
             {showLogoutModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
-                    <Card className="relative w-full max-w-md bg-white shadow-2xl overflow-hidden border-none scale-100 animate-in fade-in zoom-in duration-200">
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setShowLogoutModal(false)}></div>
+                    <Card className="relative w-full max-w-md bg-white shadow-2xl overflow-hidden border-none rounded-t-3xl sm:rounded-3xl animate-in slide-in-from-bottom duration-300">
                         <div className="p-8">
                             <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6">
                                 <LogOut className="w-8 h-8 text-red-600" />
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Sign Out</h3>
-                            <p className="text-slate-500 font-medium mb-8">Are you sure you want to end your session? You will need to sign back in to access the administrator console.</p>
-                            <div className="flex gap-4">
-                                <Button variant="secondary" className="flex-1 font-bold" onClick={() => setShowLogoutModal(false)}>
-                                    Cancel
+                            <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2 uppercase">End Session?</h3>
+                            <p className="text-slate-500 font-medium mb-8 leading-relaxed">Are you sure you want to sign out? You will need to re-authenticate to access the administrative console.</p>
+                            <div className="flex flex-col gap-3">
+                                <Button className="w-full h-14 bg-red-600 hover:bg-red-700 font-black text-xs uppercase tracking-widest rounded-xl" onClick={handleSignOutClick}>
+                                    Sign Out Now
                                 </Button>
-                                <Button className="flex-1 bg-red-600 hover:bg-red-700 font-bold" onClick={handleSignOutClick}>
-                                    Sign Out
+                                <Button variant="secondary" className="w-full h-14 font-black text-xs uppercase tracking-widest rounded-xl" onClick={() => setShowLogoutModal(false)}>
+                                    Stay Connected
                                 </Button>
                             </div>
                         </div>
@@ -572,6 +587,7 @@ const AdminDashboard = () => {
             )}
         </div>
     );
+
 };
 
 export default AdminDashboard;

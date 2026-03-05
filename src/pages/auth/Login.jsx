@@ -103,8 +103,8 @@ const Login = () => {
             </div>
 
             {/* Secure Sign-in Interface */}
-            <div className="flex items-center justify-center p-6 xs:p-12 sm:p-24 bg-white relative">
-                <div className="absolute top-0 right-0 p-6 md:p-8">
+            <div className="flex items-center justify-center p-6 xs:p-8 sm:p-12 lg:p-24 bg-white relative">
+                <div className="absolute top-0 right-0 p-6 md:p-8 mobile-hide">
                     <div className="text-[9px] md:text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] md:tracking-[0.3em] flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                         System Ready
@@ -112,36 +112,43 @@ const Login = () => {
                 </div>
 
                 <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     className="w-full max-w-sm"
                 >
-                    <div className="lg:hidden mb-12 flex items-center gap-3">
-                        <Logo className="w-10 h-10" />
-                        <span className="text-slate-900 font-extrabold tracking-tighter text-2xl uppercase">ElectionHub</span>
+                    <div className="lg:hidden mb-10 flex flex-col items-center gap-4 text-center">
+                        <div className="bg-blue-700 p-3 rounded-2xl shadow-xl shadow-blue-500/20">
+                            <Logo className="w-10 h-10" />
+                        </div>
+                        <div>
+                            <span className="text-slate-900 font-black tracking-tighter text-3xl uppercase italic">ElectionHub</span>
+                            <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.4em] mt-1">Institutional Grade</p>
+                        </div>
                     </div>
 
-                    <div className="mb-8 md:mb-12">
-                        <h2 className="text-3xl md:text-4xl font-black text-slate-950 tracking-tighter">Sign In</h2>
-                        <p className="text-slate-500 mt-3 md:mt-4 font-medium text-base md:text-lg leading-relaxed">Please enter your account details to access the voting dashboard.</p>
+                    <div className="mb-10 text-center lg:text-left">
+                        <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter uppercase italic">Secure Access</h2>
+                        <p className="text-slate-500 mt-3 font-medium text-sm md:text-lg leading-relaxed">System authorization required to access administrative controls.</p>
                     </div>
 
-                    <form onSubmit={handleLogin} className="space-y-8">
-                        <Input
-                            label="Email Address"
-                            type="email"
-                            placeholder="you@organization.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            disabled={loading}
-                            className="bg-slate-50 border-slate-200 focus:bg-white h-14 font-medium"
-                            required
-                        />
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Identity/Email</label>
+                            <Input
+                                type="email"
+                                placeholder="administrator@org.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                disabled={loading}
+                                className="bg-slate-50 border-slate-100 focus:bg-white h-14 font-bold rounded-xl"
+                                required
+                            />
+                        </div>
 
-                        <div className="space-y-3">
-                            <div className="flex justify-between items-center">
-                                <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Password</label>
-                                <Link to="/forgot-password" title="Initiate password recovery protocol" className="text-[11px] font-black text-blue-700 hover:text-blue-800 uppercase tracking-wider">Forgot password?</Link>
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center px-1">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Password</label>
+                                <Link to="/forgot-password" intrinsic="true" className="text-[10px] font-black text-blue-700 hover:text-blue-800 uppercase tracking-wider">Reset</Link>
                             </div>
                             <Input
                                 type="password"
@@ -149,46 +156,47 @@ const Login = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 disabled={loading}
-                                className="bg-slate-50 border-slate-200 focus:bg-white h-14"
+                                className="bg-slate-50 border-slate-100 focus:bg-white h-14 rounded-xl"
                                 required
                             />
                         </div>
 
                         <Button
                             type="submit"
-                            className="w-full h-16 text-sm font-black uppercase tracking-[0.2em] shadow-2xl shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            className="w-full h-16 text-xs font-black uppercase tracking-[0.3em] shadow-2xl shadow-blue-700/20 transition-all rounded-xl mt-4"
                             disabled={loading}
                         >
                             {loading ? (
                                 <div className="flex items-center gap-3">
-                                    <Loader2 className="w-5 h-5 animate-spin" /> Signing in...
+                                    <Loader2 className="w-5 h-5 animate-spin" /> Authorizing...
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-2">
-                                    Continue to Dashboard <ShieldCheck className="w-5 h-5" />
+                                <div className="flex items-center gap-3">
+                                    Enter Console <ShieldCheck className="w-5 h-5" />
                                 </div>
                             )}
                         </Button>
                     </form>
 
-                    <div className="mt-12 text-center">
-                        <p className="text-sm font-bold text-slate-400">
-                            New here?{' '}
-                            <Link to="/register" className="text-blue-700 hover:underline decoration-2 underline-offset-4 font-black">Register Your Organization</Link>
+                    <div className="mt-10 text-center">
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">
+                            New Department?{' '}
+                            <Link to="/register" className="text-blue-700 hover:underline decoration-2 underline-offset-4 font-black">Register Organization</Link>
                         </p>
                     </div>
 
-                    <footer className="mt-20 pt-8 border-t border-slate-100 flex justify-between items-center">
-                        <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
-                            ElectionHub v1.0
+                    <footer className="mt-16 pt-6 border-t border-slate-100 flex justify-between items-center opacity-50">
+                        <div className="text-[9px] font-black text-slate-300 uppercase tracking-[0.4em]">
+                            V1.4.2 PREMIUM
                         </div>
-                        <div className="flex gap-4">
-                            <div className="w-2 h-2 rounded-full bg-slate-100" />
-                            <div className="w-2 h-2 rounded-full bg-slate-100" />
+                        <div className="flex gap-2">
+                            <div className="w-1 h-1 rounded-full bg-slate-200" />
+                            <div className="w-1 h-1 rounded-full bg-slate-200" />
                         </div>
                     </footer>
                 </motion.div>
             </div>
+
         </div>
     );
 };

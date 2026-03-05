@@ -110,6 +110,18 @@ export const AuthProvider = ({ children }) => {
 
         const syncAuth = async () => {
             try {
+                // First, check for cached profile to provide an immediate UI response
+                const cached = typeof window !== 'undefined' ? window.sessionStorage.getItem('electionhub-profile') : null;
+                if (cached) {
+                    try {
+                        const p = JSON.parse(cached);
+                        if (p) {
+                            setProfile(p);
+                            // We don't set loading false yet, we still need to verify the session
+                        }
+                    } catch (e) { }
+                }
+
                 const { data: { session }, error: sessionError } = await withTimeout(
                     supabase.auth.getSession(),
                     'supabase.auth.getSession',
@@ -123,17 +135,6 @@ export const AuthProvider = ({ children }) => {
                 setUser(currentUser);
 
                 if (currentUser) {
-                    const cached = typeof window !== 'undefined' ? window.sessionStorage.getItem('electionhub-profile') : null;
-                    if (cached) {
-                        try {
-                            const p = JSON.parse(cached);
-                            if (p && p.id === currentUser.id) {
-                                setProfile(p);
-                                setLoading(false);
-                            }
-                        } catch (e) { }
-                    }
-
                     const profileData = await ensureProfile(currentUser);
                     if (isMounted) {
                         setProfile(profileData);
