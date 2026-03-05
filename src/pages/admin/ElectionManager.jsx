@@ -105,6 +105,32 @@ const ElectionManager = () => {
         }
     }, [isEditing, id]);
 
+    useEffect(() => {
+        if (!id || !isEditing || !showTokensModal) return;
+
+        const channel = supabase
+            .channel(`tokens_${id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'voting_tokens',
+                    filter: `election_id=eq.${id}`
+                },
+                (payload) => {
+                    setTokens((current) =>
+                        current.map((t) => (t.id === payload.new.id ? { ...t, is_used: payload.new.is_used, used_at: payload.new.used_at } : t))
+                    );
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [id, isEditing, showTokensModal]);
+
     const fetchElectionDetails = async () => {
         try {
             const { data, error } = await supabase
@@ -454,8 +480,8 @@ const ElectionManager = () => {
                         <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Back Home</span>
                     </button>
                     <div className="text-center min-w-0 flex-1">
-                        <h1 className="text-base md:text-xl font-black text-slate-900 tracking-tight truncate uppercase italic">{isEditing ? 'Settings' : 'New Election'}</h1>
-                        <p className="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] truncate hidden xs:block">Configure</p>
+                        <h1 className="text-sm md:text-xl font-black text-slate-900 tracking-tight truncate uppercase italic">{isEditing ? 'Settings' : 'New Election'}</h1>
+                        <p className="text-[8px] md:text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] truncate hidden xs:block">Configure</p>
                     </div>
                     <div className="flex items-center gap-2 md:gap-3 shrink-0">
                         {isEditing && (
@@ -468,7 +494,7 @@ const ElectionManager = () => {
                             </Button>
                         )}
                         <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2 px-4 md:px-8 h-10 md:h-12 shadow-blue-700/20 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-xl">
-                            <Save className="w-4 h-4" /> <span>{saving ? '...' : 'Commit'}</span>
+                            <Save className="w-4 h-4" /> <span>{saving ? '...' : 'Save'}</span>
                         </Button>
                         <Button
                             variant="secondary"
@@ -592,15 +618,15 @@ const ElectionManager = () => {
                             placeholder="e.g. 100"
                             value={election.total_expected_voters}
                             innerClassName="h-14 md:h-12 font-black rounded-xl"
-                            onChange={(e) => setElection({ ...election, total_expected_voters: parseInt(e.target.value) || 0 })}
+                            onChange={(e) => setElection({ ...election, total_expected_voters: e.target.value === '' ? '' : parseInt(e.target.value) || 0 })}
                             disabled={election.tokens_generated}
                         />
                         <div className="flex flex-col justify-center bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-                            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1 flex items-center gap-2"><Shield className="w-3 h-3" /> Security</p>
+                            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1 flex items-center gap-2"><Shield className="w-3 h-3" /> Protocol Description</p>
                             <p className="text-[10px] md:text-xs text-slate-500 leading-relaxed font-medium italic">
                                 {election.tokens_generated
-                                    ? "LOCKED: Tokens already sent."
-                                    : "Matches number of unique codes."}
+                                    ? "LOCKED"
+                                    : "Protocol details"}
                             </p>
                         </div>
                         <Input
@@ -624,7 +650,7 @@ const ElectionManager = () => {
                         <label className="block text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest">Protocol Description</label>
                         <textarea
                             className="w-full bg-white border border-slate-200 rounded-xl px-4 py-4 text-slate-900 text-sm md:text-base font-medium focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 transition-all min-h-[120px] md:min-h-[140px]"
-                            placeholder="Detail the mandate and scope of this election event..."
+                            placeholder="Briefly explain what this election is about..."
                             value={election.description}
                             onChange={(e) => setElection({ ...election, description: e.target.value })}
                         />
@@ -641,7 +667,7 @@ const ElectionManager = () => {
                             variant="secondary"
                             size="sm"
                             onClick={handleAddPosition}
-                            className="gap-2 font-bold uppercase tracking-wider text-[10px]"
+                            className="gap-2 font-black uppercase tracking-wider text-[10px] bg-slate-100 hover:bg-slate-200 border-none px-4"
                             disabled={election.status === 'active' || election.status === 'closed'}
                         >
                             <Plus className="w-3.5 h-3.5" /> Add Position
@@ -772,7 +798,7 @@ const ElectionManager = () => {
                                 {election.status !== 'active' && election.status !== 'closed' && (
                                     <button
                                         onClick={() => handleAddCandidate(posIdx)}
-                                        className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 hover:text-blue-600 hover:border-blue-600 hover:bg-blue-50/50 transition-all font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3"
+                                        className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 hover:text-blue-600 hover:border-blue-600 bg-slate-50/50 hover:bg-blue-50/80 transition-all font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3"
                                     >
                                         <UserPlus className="w-4 h-4" /> Add New Candidate
                                     </button>

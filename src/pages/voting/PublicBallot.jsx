@@ -250,7 +250,7 @@ const PublicBallot = () => {
                                                             {candidate.full_name}
                                                         </h4>
                                                         <p className="text-[10px] md:text-xs text-slate-400 font-medium leading-relaxed italic opacity-80 line-clamp-2 max-w-[200px]">
-                                                            "{candidate.bio || 'Formal mandate pending.'}"
+                                                            "{candidate.bio || 'No description provided.'}"
                                                         </p>
                                                     </div>
 
