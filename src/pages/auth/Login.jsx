@@ -24,7 +24,7 @@ const Login = () => {
         setLoading(true);
         try {
             await signIn(email, password);
-            toast.success('Authentication successful. Accessing Protected Portal.');
+            toast.success('Welcome back!');
             navigate('/');
         } catch (err) {
             const rawMessage = err?.message || '';
@@ -62,7 +62,7 @@ const Login = () => {
             <div className="hidden lg:block relative overflow-hidden bg-slate-900">
                 <img
                     src={heroImage}
-                    alt="Institutional Voting"
+                    alt="Voting"
                     className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-slate-950/60" />
@@ -80,10 +80,10 @@ const Login = () => {
                             transition={{ delay: 0.2 }}
                         >
                             <h1 className="text-5xl font-black text-white leading-tight mb-6 tracking-tight">
-                                Secure. Transparent. <span className="text-blue-500 underline decoration-blue-500/30 underline-offset-8 font-serif italic">Reliable</span> Voting.
+                                Easy & Secure <span className="text-blue-500 underline decoration-blue-500/30 underline-offset-8 font-serif italic">Online</span> Voting.
                             </h1>
                             <p className="text-xl text-slate-300 font-medium leading-relaxed">
-                                The modern standard for professional elections. Experience seamless digital balloting with bank-grade security and real-time results.
+                                The best way to run your elections. Simple setup, secure voting, and clear results.
                             </p>
                         </motion.div>
                     </div>
@@ -117,26 +117,26 @@ const Login = () => {
                     className="w-full max-w-sm"
                 >
                     <div className="lg:hidden mb-10 flex flex-col items-center gap-4 text-center">
-                        <div className="bg-blue-700 p-3 rounded-2xl shadow-xl shadow-blue-500/20">
-                            <Logo className="w-10 h-10" />
+                        <div className="bg-blue-700 p-4 rounded-3xl shadow-2xl shadow-blue-500/20">
+                            <Logo className="w-12 h-12" />
                         </div>
                         <div>
-                            <span className="text-slate-900 font-black tracking-tighter text-3xl uppercase italic">ElectionHub</span>
-                            <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.4em] mt-1">Institutional Grade</p>
+                            <span className="text-slate-900 font-black tracking-tighter text-4xl uppercase italic">ElectionHub</span>
+                            <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.4em] mt-1">Simple & Secure</p>
                         </div>
                     </div>
 
                     <div className="mb-10 text-center lg:text-left">
-                        <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter uppercase italic">Secure Access</h2>
-                        <p className="text-slate-500 mt-3 font-medium text-sm md:text-lg leading-relaxed">System authorization required to access administrative controls.</p>
+                        <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter uppercase italic">Sign In</h2>
+                        <p className="text-slate-500 mt-3 font-medium text-sm md:text-lg leading-relaxed">Welcome back! Please sign in to continue.</p>
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Identity/Email</label>
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Email</label>
                             <Input
                                 type="email"
-                                placeholder="administrator@org.com"
+                                placeholder="name@email.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 disabled={loading}
@@ -163,16 +163,16 @@ const Login = () => {
 
                         <Button
                             type="submit"
-                            className="w-full h-16 text-xs font-black uppercase tracking-[0.3em] shadow-2xl shadow-blue-700/20 transition-all rounded-xl mt-4"
+                            className="w-full h-14 text-xs font-black uppercase tracking-[0.3em] shadow-2xl shadow-blue-700/10 transition-all rounded-xl mt-4"
                             disabled={loading}
                         >
                             {loading ? (
                                 <div className="flex items-center gap-3">
-                                    <Loader2 className="w-5 h-5 animate-spin" /> Authorizing...
+                                    <Loader2 className="w-5 h-5 animate-spin" /> Signing in...
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-3">
-                                    Enter Console <ShieldCheck className="w-5 h-5" />
+                                    Sign In <ShieldCheck className="w-5 h-5" />
                                 </div>
                             )}
                         </Button>
@@ -180,8 +180,8 @@ const Login = () => {
 
                     <div className="mt-10 text-center">
                         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">
-                            New Department?{' '}
-                            <Link to="/register" className="text-blue-700 hover:underline decoration-2 underline-offset-4 font-black">Register Organization</Link>
+                            New here?{' '}
+                            <Link to="/register" className="text-blue-700 hover:underline decoration-2 underline-offset-4 font-black">Create an account</Link>
                         </p>
                     </div>
 

@@ -23,18 +23,37 @@
     padding-bottom: 100px !important;
   }
 
-  /* Make headers more prominent on mobile */
+  /* Make headers more prominent but not oversize on mobile */
   h1 {
-    font-size: 2.25rem !important;
-    line-height: 1.1 !important;
-    letter-spacing: -0.05em !important;
+    font-size: 1.75rem !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.04em !important;
+  }
+
+  h2 {
+    font-size: 1.25rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .mobile-text-sm {
+    font-size: 0.8rem !important;
+  }
+
+  .mobile-text-xs {
+    font-size: 0.7rem !important;
+  }
+
+  /* Relaxed chart container for mobile */
+  .mobile-chart-relaxed {
+    height: 350px !important;
+    width: 100% !important;
   }
 
   /* Horizontal scroll for stat cards if they overflow, or stack them nicely */
   .mobile-stats-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
 
   .mobile-hide {

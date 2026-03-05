@@ -284,7 +284,7 @@ const AdminDashboard = () => {
             <div className="min-h-screen flex items-center justify-center bg-slate-50">
                 <div className="flex flex-col items-center gap-4">
                     <Loader2 className="w-10 h-10 text-blue-700 animate-spin" />
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] animate-pulse">Initializing Admin Console...</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] animate-pulse">Loading dashboard...</p>
                 </div>
             </div>
         );
@@ -307,8 +307,8 @@ const AdminDashboard = () => {
                             <div className="bg-blue-700 p-1.5 rounded-lg text-white shrink-0 shadow-lg shadow-blue-500/20">
                                 <Logo className="w-4 h-4 md:w-5 md:h-5" iconClassName="w-2.5 h-2.5 md:w-3 md:h-3" />
                             </div>
-                            <span className="font-black text-slate-900 tracking-tighter text-lg md:text-xl uppercase truncate max-w-[140px] md:max-w-none">
-                                Admin Console
+                            <span className="font-black text-slate-900 tracking-tighter text-base md:text-xl uppercase truncate max-w-[120px] md:max-w-none">
+                                Home
                             </span>
                         </button>
                     </div>
@@ -336,22 +336,22 @@ const AdminDashboard = () => {
                 <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-6">
                     <div className="space-y-1 w-full md:w-auto">
                         <div className="flex items-center gap-2 text-blue-600 font-black text-[10px] uppercase tracking-[0.2em]">
-                            <Activity className="w-3.5 h-3.5" /> Operations Dashboard
+                            <Activity className="w-3.5 h-3.5" /> Dashboard
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter">Election Intelligence</h1>
-                        <p className="text-sm text-slate-500 font-medium md:whitespace-nowrap">
-                            Managing <span className="text-indigo-700 font-black uppercase tracking-tight">{profile?.organizations?.name || 'Your Organization'}</span>
+                        <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase italic">Overview</h1>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-tight">
+                            Managing <span className="text-slate-900">{profile?.organizations?.name || 'Your Org'}</span>
                         </p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                        <Button className="gap-2 w-full sm:px-8 h-14 md:h-[52px] shadow-xl shadow-blue-700/20 text-xs font-black uppercase tracking-widest md:rounded-xl" onClick={() => navigate('/admin/elections/')}>
-                            <Plus className="w-5 h-5 md:w-4 md:h-4" /> Start New Election
+                        <Button className="gap-2 w-full sm:px-8 h-12 md:h-[52px] shadow-lg shadow-blue-700/10 text-[10px] font-black uppercase tracking-widest rounded-xl" onClick={() => navigate('/admin/elections/')}>
+                            <Plus className="w-4 h-4" /> New Election
                         </Button>
                         <Button
-                            className="gap-2 w-full sm:px-8 h-14 md:h-[52px] font-black text-xs uppercase tracking-[0.15em] bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-600/20 text-white md:rounded-xl"
+                            className="gap-2 w-full sm:px-8 h-12 md:h-[52px] font-black text-[10px] uppercase tracking-widest bg-slate-900 hover:bg-black text-white rounded-xl"
                             onClick={() => navigate('/admin/results/')}
                         >
-                            <BarChart3 className="w-5 h-5 md:w-4 md:h-4" /> View Results
+                            <BarChart3 className="w-4 h-4" /> View Results
                         </Button>
                     </div>
                 </header>
@@ -359,10 +359,10 @@ const AdminDashboard = () => {
                 {/* Operational Statistics */}
                 <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-12">
                     {[
-                        { label: 'Tokens', value: stats.issuedTokens, icon: Ticket, trend: 'SECURE', color: 'text-blue-700' },
-                        { label: 'Active', value: stats.activeElections, icon: Activity, trend: 'STABLE', color: 'text-emerald-600' },
-                        { label: 'Ballots', value: stats.usedTokens, icon: Vote, trend: 'LIVE', color: 'text-indigo-600' },
-                        { label: 'Turnout', value: stats.turnout, icon: TrendingUp, trend: 'TRACKED', color: 'text-orange-600' },
+                        { label: 'Codes', value: stats.issuedTokens, icon: Ticket, trend: 'SECURE', color: 'text-blue-700' },
+                        { label: 'Active', value: stats.activeElections, icon: Activity, trend: 'LIVE', color: 'text-emerald-600' },
+                        { label: 'Votes', value: stats.usedTokens, icon: Vote, trend: 'COUNTING', color: 'text-indigo-600' },
+                        { label: 'Turnout', value: stats.turnout, icon: TrendingUp, trend: 'RATIO', color: 'text-orange-600' },
                     ].map((stat, i) => (
                         <Card key={i} className="flex flex-col justify-between p-5 md:p-6 shadow-none border-slate-200 mobile-stats-card">
                             <div className="flex justify-between items-start mb-6">
@@ -386,26 +386,26 @@ const AdminDashboard = () => {
                         <Card className="shadow-none border-slate-200 p-6 md:p-8">
                             <div className="flex justify-between items-center mb-10">
                                 <div>
-                                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                    <h3 className="text-[10px] md:text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                                         <BarChart3 className="w-4 h-4 text-blue-700" />
-                                        Voting Activity
+                                        Activity
                                     </h3>
-                                    <p className="text-[10px] text-slate-500 font-bold mt-1 uppercase tracking-tight">Timeline of cryptographic redemptions</p>
+                                    <p className="text-[9px] text-slate-400 font-bold mt-1 uppercase tracking-tight">Votes over time</p>
                                 </div>
                                 <Badge variant="primary" className="hidden xs:block">LIVE ANALYTICS</Badge>
                             </div>
-                            <div className="h-[250px] md:h-[300px] relative">
+                            <div className="h-[250px] md:h-[300px] relative mobile-chart-relaxed">
                                 <Line data={chartData} options={chartOptions} />
                             </div>
                         </Card>
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                <h3 className="text-[10px] md:text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                                     <Layers className="w-4 h-4 text-blue-700" />
-                                    Election Registry
+                                    All Elections
                                 </h3>
-                                <button className="text-[10px] font-black text-blue-700 uppercase tracking-widest md:hidden">View All</button>
+                                <button className="text-[9px] font-black text-blue-700 uppercase tracking-widest md:hidden">View All</button>
                             </div>
                             <div className="space-y-4">
                                 {elections.map((election) => {
@@ -429,9 +429,9 @@ const AdminDashboard = () => {
                                             onClick={() => navigate(`/admin/elections/${election.id}`)}
                                         >
                                             <div className="flex items-center gap-4 md:gap-6">
-                                                <div className={`w-1 md:w-1.5 h-12 md:h-12 rounded-full ${effectiveStatus === 'active' ? 'bg-emerald-500 shadow-md shadow-emerald-500/20 animate-pulse' : effectiveStatus === 'upcoming' ? 'bg-blue-400' : 'bg-slate-300'}`} />
+                                                <div className={`w-1 md:w-1.5 h-10 md:h-12 rounded-full ${effectiveStatus === 'active' ? 'bg-emerald-500 shadow-md shadow-emerald-500/20' : effectiveStatus === 'upcoming' ? 'bg-blue-400' : 'bg-slate-300'}`} />
                                                 <div className="min-w-0 flex-1">
-                                                    <h4 className="font-black text-slate-900 text-lg md:text-xl uppercase tracking-tighter truncate leading-tight mb-1">{election.title}</h4>
+                                                    <h4 className="font-black text-slate-900 text-base md:text-xl uppercase tracking-tighter truncate leading-tight mb-1">{election.title}</h4>
                                                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-slate-500 font-bold text-[9px] md:text-xs uppercase tracking-tight">
                                                         <span className="flex items-center gap-1">
                                                             <Ticket className="w-2.5 h-2.5" /> {usedCount}/{total} <span className="mobile-hide">Tokens</span>
@@ -513,8 +513,8 @@ const AdminDashboard = () => {
                     <div className="space-y-8">
                         <Card className="bg-slate-950 border-none text-white p-8 overflow-hidden relative rounded-2xl md:rounded-3xl">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-                            <h3 className="font-black text-xs uppercase tracking-widest text-slate-500 mb-8 relative z-10">
-                                Org Snapshot
+                            <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-500 mb-8 relative z-10">
+                                Summary
                             </h3>
                             <div className="space-y-6 relative z-10">
                                 <div className="flex justify-between items-center pb-4 border-b border-white/5">
@@ -571,14 +571,14 @@ const AdminDashboard = () => {
                             <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6">
                                 <LogOut className="w-8 h-8 text-red-600" />
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2 uppercase">End Session?</h3>
-                            <p className="text-slate-500 font-medium mb-8 leading-relaxed">Are you sure you want to sign out? You will need to re-authenticate to access the administrative console.</p>
+                            <h3 className="text-xl font-black text-slate-900 tracking-tight mb-2 uppercase italic">Log Out?</h3>
+                            <p className="text-sm text-slate-400 font-bold uppercase mb-8 leading-relaxed">End your admin session.</p>
                             <div className="flex flex-col gap-3">
-                                <Button className="w-full h-14 bg-red-600 hover:bg-red-700 font-black text-xs uppercase tracking-widest rounded-xl" onClick={handleSignOutClick}>
-                                    Sign Out Now
+                                <Button className="w-full h-12 bg-red-600 hover:bg-red-700 font-black text-[10px] uppercase tracking-widest rounded-xl text-white" onClick={handleSignOutClick}>
+                                    Log Out
                                 </Button>
-                                <Button variant="secondary" className="w-full h-14 font-black text-xs uppercase tracking-widest rounded-xl" onClick={() => setShowLogoutModal(false)}>
-                                    Stay Connected
+                                <Button variant="secondary" className="w-full h-12 font-black text-[10px] uppercase tracking-widest rounded-xl" onClick={() => setShowLogoutModal(false)}>
+                                    Cancel
                                 </Button>
                             </div>
                         </div>

@@ -37,10 +37,10 @@ const Register = () => {
             console.log('Register: Signup successful response:', data);
 
             if (data?.session) {
-                toast.success('Account created. Accessing your dashboard.');
+                toast.success('Account created!');
                 navigate('/admin');
             } else {
-                toast.success('Registration successful. Please check your email to verify.');
+                toast.success('Registration successful! Please check your email.');
                 navigate('/login');
             }
         } catch (err) {
@@ -57,7 +57,7 @@ const Register = () => {
             <div className="hidden lg:block relative overflow-hidden bg-slate-900">
                 <img
                     src={heroImage}
-                    alt="Institutional Voting"
+                    alt="Voting"
                     className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-slate-950/60" />
@@ -75,10 +75,10 @@ const Register = () => {
                             transition={{ delay: 0.2 }}
                         >
                             <h1 className="text-5xl font-black text-white leading-tight mb-6 tracking-tight">
-                                Empowering <span className="text-blue-500 underline decoration-blue-500/30 underline-offset-8 font-serif italic">Trusted</span> Leadership.
+                                Simple Voting for <span className="text-blue-500 underline decoration-blue-500/30 underline-offset-8 font-serif italic">Everyone</span>.
                             </h1>
                             <p className="text-xl text-slate-300 font-medium leading-relaxed">
-                                Set up your organization's digital voting system in minutes. Professional-grade infrastructure for modern decision making.
+                                Set up your election in minutes. The easiest way to make group decisions.
                             </p>
                         </motion.div>
                     </div>
@@ -111,44 +111,49 @@ const Register = () => {
                     animate={{ opacity: 1, x: 0 }}
                     className="w-full max-w-sm"
                 >
-                    <div className="lg:hidden mb-12 flex items-center gap-3">
-                        <Logo className="w-10 h-10" />
-                        <span className="text-slate-900 font-extrabold tracking-tighter text-2xl uppercase">ElectionHub</span>
+                    <div className="lg:hidden mb-12 flex flex-col items-center gap-4 text-center">
+                        <div className="bg-blue-700 p-4 rounded-3xl shadow-xl shadow-blue-500/20 border-4 border-blue-600">
+                            <Logo className="w-12 h-12" />
+                        </div>
+                        <div>
+                            <span className="text-slate-900 font-black tracking-tighter text-4xl uppercase italic">ElectionHub</span>
+                            <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.4em] mt-1">Create Account</p>
+                        </div>
                     </div>
 
-                    <div className="mb-8 md:mb-10">
-                        <h2 className="text-3xl md:text-4xl font-black text-slate-950 tracking-tighter">Get Started</h2>
-                        <p className="text-slate-500 mt-3 md:mt-4 font-medium text-base md:text-lg leading-relaxed">Register your organization and create an administrator account.</p>
+                    <div className="mb-8 md:mb-10 text-center lg:text-left">
+                        <h2 className="text-3xl md:text-4xl font-black text-slate-950 tracking-tighter uppercase italic">Sign Up</h2>
+                        <p className="text-slate-500 mt-3 md:mt-4 font-medium text-base md:text-lg leading-relaxed">Create an account for your organization.</p>
                     </div>
 
                     <form onSubmit={handleRegister} className="space-y-6">
                         <Input
-                            label="Administrator Full Name"
+                            label="Your Name"
                             type="text"
-                            placeholder="John Doe"
+                            placeholder="e.g. Ama Serwaa"
                             value={formData.fullName}
                             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                            className="bg-slate-50 border-slate-200 focus:bg-white h-14"
+                            className="bg-slate-50 border-slate-100 focus:bg-white h-14 rounded-xl"
                             required
                         />
 
                         <Input
-                            label="Organization Name"
+                            label="School / Company"
                             type="text"
-                            placeholder="Acme Corporation"
+                            placeholder="e.g. University of Ghana"
                             value={formData.orgName}
                             onChange={(e) => setFormData({ ...formData, orgName: e.target.value })}
-                            className="bg-slate-50 border-slate-200 focus:bg-white h-14"
+                            className="bg-slate-50 border-slate-100 focus:bg-white h-14 rounded-xl"
                             required
                         />
 
                         <Input
-                            label="Work Email Address"
+                            label="Email"
                             type="email"
-                            placeholder="admin@organization.com"
+                            placeholder="name@email.com"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            className="bg-slate-50 border-slate-200 focus:bg-white h-14"
+                            className="bg-slate-50 border-slate-100 focus:bg-white h-14 rounded-xl"
                             required
                         />
 
@@ -158,22 +163,22 @@ const Register = () => {
                             placeholder="••••••••"
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            className="bg-slate-50 border-slate-200 focus:bg-white h-14"
+                            className="bg-slate-50 border-slate-100 focus:bg-white h-14 rounded-xl"
                             required
                         />
 
                         <Button
                             type="submit"
-                            className="w-full h-16 text-sm font-black uppercase tracking-[0.2em] shadow-2xl shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            className="w-full h-16 text-sm font-black uppercase tracking-[0.2em] shadow-2xl shadow-blue-500/10 transition-all rounded-xl mt-4"
                             disabled={loading}
                         >
                             {loading ? (
                                 <div className="flex items-center gap-3">
-                                    <Loader2 className="w-5 h-5 animate-spin" /> Setting up...
+                                    <Loader2 className="w-5 h-5 animate-spin" /> Creating account...
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2">
-                                    Create Account <ArrowRight className="w-5 h-5 font-bold" />
+                                    Sign Up <ArrowRight className="w-5 h-5 font-bold" />
                                 </div>
                             )}
                         </Button>

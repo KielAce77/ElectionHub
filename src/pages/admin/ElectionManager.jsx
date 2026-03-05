@@ -454,8 +454,8 @@ const ElectionManager = () => {
                         <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Back Home</span>
                     </button>
                     <div className="text-center min-w-0 flex-1">
-                        <h1 className="text-base md:text-xl font-black text-slate-900 tracking-tight truncate uppercase italic">{isEditing ? 'Configure' : 'Initiate'}</h1>
-                        <p className="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] truncate hidden xs:block">Secure Registry</p>
+                        <h1 className="text-base md:text-xl font-black text-slate-900 tracking-tight truncate uppercase italic">{isEditing ? 'Settings' : 'New Election'}</h1>
+                        <p className="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] truncate hidden xs:block">Configure</p>
                     </div>
                     <div className="flex items-center gap-2 md:gap-3 shrink-0">
                         {isEditing && (
@@ -492,9 +492,9 @@ const ElectionManager = () => {
                                     <Ticket className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="font-black text-slate-900 uppercase tracking-tight">Token Management</h3>
+                                    <h3 className="font-black text-slate-900 uppercase tracking-tight">Tokens</h3>
                                     <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">
-                                        {election.tokens_generated ? 'Tokens have been securely generated' : 'Tokens not yet generated'}
+                                        {election.tokens_generated ? 'Tokens are ready' : 'Tokens not generated yet'}
                                     </p>
                                 </div>
                             </div>
@@ -502,8 +502,8 @@ const ElectionManager = () => {
                             {!election.tokens_generated ? (
                                 <div className="flex items-center gap-4">
                                     <div className="text-right hidden sm:block">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ready to generate</p>
-                                        <p className="text-sm font-black text-blue-700">{election.total_expected_voters} Unique Keys</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ready to go</p>
+                                        <p className="text-sm font-black text-blue-700">{election.total_expected_voters} Keys</p>
                                     </div>
                                     <Button
                                         onClick={handleGenerateTokens}
@@ -517,7 +517,7 @@ const ElectionManager = () => {
                             ) : (
                                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4">
                                     <Badge variant="success" className="h-10 px-4 md:px-6 text-[9px] md:text-xs tracking-widest shrink-0">
-                                        {election.total_expected_voters} TOKENS ACTIVE
+                                        {election.total_expected_voters} READY
                                     </Badge>
                                     <Button
                                         type="button"
@@ -548,8 +548,8 @@ const ElectionManager = () => {
                                     <Send className="w-5 h-5 text-slate-600" />
                                 </div>
                                 <div>
-                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Voting Portal Link</h4>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Share this link with your voters</p>
+                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Voting Link</h4>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Share this with voters</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 w-full md:w-auto">
@@ -573,38 +573,38 @@ const ElectionManager = () => {
                 <Card className="shadow-none border-slate-200 p-6 md:p-8 space-y-6 md:space-y-10 rounded-2xl md:rounded-3xl">
                     <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                         <Settings className="w-4 h-4 text-blue-700" />
-                        Core Parameters
+                        Basic Info
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                         <div className="md:col-span-2">
                             <Input
-                                label="Election Subject"
-                                placeholder="e.g. 2024 Presidential Mandate"
+                                label="Title"
+                                placeholder="e.g. 2024 Election"
                                 value={election.title}
                                 innerClassName="h-14 md:h-12 text-base font-bold rounded-xl"
                                 onChange={(e) => setElection({ ...election, title: e.target.value })}
                             />
                         </div>
                         <Input
-                            label="Target Voter Count"
+                            label="Total Voters"
                             type="number"
                             min="1"
-                            placeholder="e.g. 1000"
+                            placeholder="e.g. 100"
                             value={election.total_expected_voters}
                             innerClassName="h-14 md:h-12 font-black rounded-xl"
                             onChange={(e) => setElection({ ...election, total_expected_voters: parseInt(e.target.value) || 0 })}
                             disabled={election.tokens_generated}
                         />
                         <div className="flex flex-col justify-center bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-                            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1 flex items-center gap-2"><Shield className="w-3 h-3" /> Integrity Lock</p>
+                            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1 flex items-center gap-2"><Shield className="w-3 h-3" /> Security</p>
                             <p className="text-[10px] md:text-xs text-slate-500 leading-relaxed font-medium italic">
                                 {election.tokens_generated
-                                    ? "Distribution complete. Count is cryptographically locked."
-                                    : "Determines the issuance of unique authentication credentials."}
+                                    ? "LOCKED: Tokens already sent."
+                                    : "Matches number of unique codes."}
                             </p>
                         </div>
                         <Input
-                            label="Activation Date"
+                            label="Start Date"
                             type="datetime-local"
                             min={new Date().toISOString().substring(0, 16)}
                             value={election.start_date ? election.start_date.substring(0, 16) : ''}
@@ -612,7 +612,7 @@ const ElectionManager = () => {
                             onChange={(e) => setElection({ ...election, start_date: e.target.value })}
                         />
                         <Input
-                            label="Termination Date"
+                            label="End Date"
                             type="datetime-local"
                             min={election.start_date ? election.start_date.substring(0, 16) : new Date().toISOString().substring(0, 16)}
                             value={election.end_date ? election.end_date.substring(0, 16) : ''}
@@ -833,28 +833,28 @@ const ElectionManager = () => {
                 </div>
             )}
 
-            {/* Tokens Viewer Modal */}
+            {/* Tokens Viewer Modal - Redesigned for Mobile */}
             {showTokensModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
                     <div
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
                         onClick={() => setShowTokensModal(false)}
                     />
-                    <Card className="relative w-full max-w-3xl bg-white shadow-2xl overflow-hidden border-none">
-                        <div className="p-6 border-b border-slate-200 flex items-center justify-between gap-4">
+                    <Card className="relative w-full max-w-3xl bg-white shadow-2xl overflow-hidden border-none rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col animate-in slide-in-from-bottom duration-300">
+                        <div className="p-5 md:p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
-                                <h3 className="text-lg font-black text-slate-900 tracking-tight">Voting Tokens</h3>
-                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">
-                                    {tokens.length} tokens for this election
+                                <h3 className="text-xl font-black text-slate-900 tracking-tight italic uppercase">Tokens</h3>
+                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">
+                                    {tokens.length} codes issued
                                 </p>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                                 <Button
                                     type="button"
                                     variant="secondary"
                                     size="sm"
                                     onClick={handleCopyAllTokens}
-                                    className="text-slate-600 font-bold px-3 py-1 text-[11px] uppercase tracking-widest"
+                                    className="text-slate-600 font-black px-3 py-2 text-[9px] uppercase tracking-widest h-9 flex-1 md:flex-initial"
                                 >
                                     Copy All
                                 </Button>
@@ -863,70 +863,70 @@ const ElectionManager = () => {
                                     variant="secondary"
                                     size="sm"
                                     onClick={handleDownloadTokensPdf}
-                                    className="text-slate-600 font-bold px-3 py-1 text-[11px] uppercase tracking-widest"
+                                    className="text-slate-600 font-black px-3 py-2 text-[9px] uppercase tracking-widest h-9 flex-1 md:flex-initial"
                                 >
-                                    Download PDF
+                                    PDF
                                 </Button>
                                 <Button
                                     variant="secondary"
                                     size="sm"
                                     onClick={() => setShowTokensModal(false)}
-                                    className="text-slate-500 font-bold px-3 py-1 text-[11px] uppercase tracking-widest"
+                                    className="text-white bg-slate-900 font-black px-3 py-2 text-[9px] uppercase tracking-widest h-9 md:bg-white md:text-slate-500"
                                 >
                                     Close
                                 </Button>
                             </div>
                         </div>
-                        <div className="p-6">
+                        <div className="p-5 overflow-y-auto flex-grow bg-slate-50/50">
                             {tokens.length === 0 ? (
-                                <p className="text-sm text-slate-500 font-medium">
-                                    No tokens were found for this election.
+                                <p className="text-sm text-slate-400 font-bold uppercase py-10 text-center tracking-widest">
+                                    No tokens found.
                                 </p>
                             ) : (
-                                <div className="border border-slate-200 rounded-xl overflow-hidden">
-                                    <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] grid grid-cols-12 gap-2">
-                                        <span className="col-span-6">Token</span>
+                                <div className="space-y-3">
+                                    <div className="hidden md:grid grid-cols-12 gap-2 bg-white border border-slate-100 rounded-xl px-4 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                        <span className="col-span-6">Token Code</span>
                                         <span className="col-span-3 text-center">Status</span>
-                                        <span className="col-span-3 text-right pr-2">Actions</span>
+                                        <span className="col-span-3 text-right">Action</span>
                                     </div>
-                                    <div className="max-h-80 overflow-y-auto">
+                                    <div className="space-y-2">
                                         {tokens.map((t) => {
                                             const isCopied = recentlyCopiedToken === t.token;
                                             return (
                                                 <div
                                                     key={t.id}
-                                                    className="px-4 py-2 border-b border-slate-100 last:border-b-0 grid grid-cols-12 gap-2 items-center text-sm"
+                                                    className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm"
                                                 >
-                                                    <span className="col-span-6 font-mono text-xs tracking-[0.2em]">
-                                                        {t.token}
-                                                    </span>
-                                                    <span className="col-span-3 text-center">
+                                                    <div className="flex items-center justify-between md:justify-start gap-4 flex-1">
+                                                        <span className="font-mono text-sm md:text-base font-black tracking-[0.2em] text-slate-900 border-b-2 border-slate-100 pb-1 md:border-none">
+                                                            {t.token}
+                                                        </span>
                                                         <Badge
                                                             variant={t.is_used ? 'neutral' : 'success'}
-                                                            className="text-[10px] px-2 py-0.5 tracking-widest"
+                                                            className="text-[9px] px-2 py-0.5 tracking-widest font-black"
                                                         >
-                                                            {t.is_used ? 'USED' : 'UNUSED'}
+                                                            {t.is_used ? 'USED' : 'READY'}
                                                         </Badge>
-                                                    </span>
-                                                    <span className="col-span-3 flex justify-end">
+                                                    </div>
+                                                    <div className="flex justify-end pt-2 md:pt-0 border-t border-slate-50 md:border-none">
                                                         <Button
                                                             type="button"
-                                                            variant="ghost"
+                                                            variant="secondary"
                                                             size="sm"
                                                             onClick={() => handleCopyToken(t.token)}
-                                                            className="gap-1 text-[11px] font-bold uppercase tracking-widest text-blue-700 hover:bg-blue-50"
+                                                            className="w-full md:w-auto gap-2 text-[10px] font-black uppercase tracking-widest h-10 px-4 rounded-xl"
                                                         >
                                                             {isCopied ? (
                                                                 <>
-                                                                    <Check className="w-3.5 h-3.5" /> Copied
+                                                                    <Check className="w-4 h-4" /> Copied
                                                                 </>
                                                             ) : (
                                                                 <>
-                                                                    <Copy className="w-3.5 h-3.5" /> Copy
+                                                                    <Copy className="w-4 h-4" /> Copy Code
                                                                 </>
                                                             )}
                                                         </Button>
-                                                    </span>
+                                                    </div>
                                                 </div>
                                             );
                                         })}
