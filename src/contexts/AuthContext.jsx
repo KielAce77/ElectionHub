@@ -211,7 +211,7 @@ export const AuthProvider = ({ children }) => {
             password,
             options: { 
                 data: metadata,
-                emailRedirectTo: `${window.location.origin}/admin`
+                emailRedirectTo: `${window.location.origin}/auth/callback`
             }
         });
         if (error) throw error;

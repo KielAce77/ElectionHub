@@ -6,6 +6,7 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
+import AuthCallback from './pages/auth/AuthCallback';
 import VoteEntry from './pages/voting/VoteEntry';
 import PublicBallot from './pages/voting/PublicBallot';
 import PublicResults from './pages/voting/PublicResults';
@@ -126,6 +127,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
 
             {/* Admin Dashboard Routes */}
             <Route path="/admin" element={<Navigate to="/admin/" replace />} />
