@@ -210,7 +210,7 @@ const PublicBallot = () => {
                                             onClick={() => handleSelect(position.id, candidate.id)}
                                             className="cursor-pointer group"
                                         >
-                                            <Card className={`relative h-full overflow-hidden border-none bg-slate-900/40 hover:bg-slate-900/60 ring-1 transition-all duration-300 ${isSelected ? 'ring-blue-500 bg-blue-500/5' : 'ring-white/5 hover:ring-white/20'}`}>
+                                            <div className={`rounded-3xl relative h-full overflow-hidden border-none bg-slate-900/40 hover:bg-slate-900/60 ring-1 transition-all duration-300 ${isSelected ? 'ring-blue-500 bg-blue-500/5' : 'ring-white/5 hover:ring-white/20'}`}>
 
                                                 <div className="p-6 md:p-8 flex flex-col items-center text-center space-y-5 md:space-y-6">
                                                     {/* Radio Button Style Indicator */}
@@ -258,7 +258,7 @@ const PublicBallot = () => {
                                                         {isSelected ? 'Candidate Selected' : 'Choose Candidate'}
                                                     </button>
                                                 </div>
-                                            </Card>
+                                            </div>
                                         </motion.div>
                                     );
                                 })}
@@ -310,14 +310,10 @@ const PublicBallot = () => {
             </main>
 
             <footer className="py-12 border-t border-white/5 bg-slate-950/50">
-                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8 opacity-40">
+                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-center gap-8 opacity-40">
                     <div className="flex items-center gap-4">
                         <Logo className="w-6 h-6 grayscale" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Protected by Institutional Cryptography</span>
-                    </div>
-                    <div className="flex gap-8">
-                        <span className="text-[10px] font-black uppercase tracking-widest">Terms of Service</span>
-                        <span className="text-[10px] font-black uppercase tracking-widest">Privacy Protocol</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Secured Platform</span>
                     </div>
                 </div>
             </footer>

@@ -519,13 +519,13 @@ const AdminDashboard = () => {
                             <div className="space-y-6 relative z-10">
                                 <div className="flex justify-between items-center pb-4 border-b border-white/5">
                                     <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">Active Events</span>
-                                    <span className="text-lg font-black text-white italic tabular-nums">
+                                    <span className="text-lg font-black text-blue-400 italic tabular-nums">
                                         {stats.activeElections}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center pb-4 border-b border-white/5">
                                     <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">Total Tokens</span>
-                                    <span className="text-lg font-black text-white tabular-nums">
+                                    <span className="text-lg font-black text-purple-400 tabular-nums">
                                         {stats.issuedTokens}
                                     </span>
                                 </div>

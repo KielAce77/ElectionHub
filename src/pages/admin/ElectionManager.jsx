@@ -108,27 +108,22 @@ const ElectionManager = () => {
     useEffect(() => {
         if (!id || !isEditing || !showTokensModal) return;
 
-        const channel = supabase
-            .channel(`tokens_${id}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: 'UPDATE',
-                    schema: 'public',
-                    table: 'voting_tokens',
-                    filter: `election_id=eq.${id}`
-                },
-                (payload) => {
-                    setTokens((current) =>
-                        current.map((t) => (t.id === payload.new.id ? { ...t, is_used: payload.new.is_used, used_at: payload.new.used_at } : t))
-                    );
+        const fetchTokensBg = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('voting_tokens')
+                    .select('id, token, is_used, used_at, created_at')
+                    .eq('election_id', id)
+                    .order('created_at', { ascending: true })
+                    .limit(500);
+                if (!error && data) {
+                    setTokens(data);
                 }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
+            } catch (err) {}
         };
+
+        const interval = setInterval(fetchTokensBg, 2000);
+        return () => clearInterval(interval);
     }, [id, isEditing, showTokensModal]);
 
     const fetchElectionDetails = async () => {
@@ -621,14 +616,6 @@ const ElectionManager = () => {
                             onChange={(e) => setElection({ ...election, total_expected_voters: e.target.value === '' ? '' : parseInt(e.target.value) || 0 })}
                             disabled={election.tokens_generated}
                         />
-                        <div className="flex flex-col justify-center bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-                            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1 flex items-center gap-2"><Shield className="w-3 h-3" /> Protocol Description</p>
-                            <p className="text-[10px] md:text-xs text-slate-500 leading-relaxed font-medium italic">
-                                {election.tokens_generated
-                                    ? "LOCKED"
-                                    : "Protocol details"}
-                            </p>
-                        </div>
                         <Input
                             label="Start Date"
                             type="datetime-local"
@@ -647,7 +634,6 @@ const ElectionManager = () => {
                         />
                     </div>
                     <div className="space-y-3">
-                        <label className="block text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest">Protocol Description</label>
                         <textarea
                             className="w-full bg-white border border-slate-200 rounded-xl px-4 py-4 text-slate-900 text-sm md:text-base font-medium focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 transition-all min-h-[120px] md:min-h-[140px]"
                             placeholder="Briefly explain what this election is about..."

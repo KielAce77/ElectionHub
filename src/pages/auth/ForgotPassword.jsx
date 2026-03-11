@@ -135,16 +135,16 @@ const ForgotPassword = () => {
                                 </div>
                                 <h2 className="text-4xl font-black text-slate-950 tracking-tighter italic">Identity Verification</h2>
                                 <p className="text-slate-500 mt-4 font-medium text-lg leading-relaxed">
-                                    A 6-digit security code has been transmitted to <span className="text-slate-950 font-bold">{email}</span>.
+                                    An 8-digit security code has been transmitted to <span className="text-slate-950 font-bold">{email}</span>.
                                 </p>
                             </div>
 
                             <form onSubmit={handleVerifyOtp} className="space-y-8">
                                 <Input
-                                    label="6-Digit Security Token"
+                                    label="8-Digit Security Token"
                                     type="text"
-                                    placeholder="XXXXXX"
-                                    maxLength={6}
+                                    placeholder="XXXXXXXX"
+                                    maxLength={8}
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                                     disabled={loading}

@@ -37,9 +37,9 @@ const CandidateRow = ({ rank, name, affiliation, votes, percentage, isWinner, ph
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className={`text-xs font-bold truncate ${isWinner ? 'text-blue-900 md:text-base' : 'text-slate-900'}`}>{name || 'No name'}</p>
-          {isWinner && <Badge variant="success" className="text-[7px] font-black tracking-widest px-1">WINNER</Badge>}
+        <div className="flex flex-wrap items-center gap-2">
+          <p className={`text-xs md:text-base font-bold break-words whitespace-normal ${isWinner ? 'text-blue-900' : 'text-slate-900'}`}>{name || 'No name'}</p>
+          {isWinner && <Badge variant="success" className="text-[7px] font-black tracking-widest px-1 shrink-0">WINNER</Badge>}
         </div>
         {affiliation && (
           <p className="text-[10px] font-medium text-slate-400 mt-0.5 line-clamp-1 italic">"{affiliation}"</p>
@@ -266,7 +266,7 @@ const ElectionResults = () => {
               <select
                 value={election?.id || ''}
                 onChange={(e) => navigate(`/admin/results/${e.target.value}`)}
-                className="bg-slate-50 border-none text-[10px] font-black uppercase tracking-widest px-2 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 transition-all max-w-[100px] xs:max-w-none"
+                className="bg-slate-800 text-white border-none text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all max-w-[100px] xs:max-w-none shadow-md"
               >
                 {allElections.map((e) => (
                   <option key={e.id} value={e.id}>{e.title}</option>

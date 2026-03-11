@@ -104,13 +104,6 @@ const Login = () => {
 
             {/* Secure Sign-in Interface */}
             <div className="flex items-center justify-center p-6 xs:p-8 sm:p-12 lg:p-24 bg-white relative">
-                <div className="absolute top-0 right-0 p-6 md:p-8 mobile-hide">
-                    <div className="text-[9px] md:text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] md:tracking-[0.3em] flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                        System Ready
-                    </div>
-                </div>
-
                 <motion.div
                     initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
