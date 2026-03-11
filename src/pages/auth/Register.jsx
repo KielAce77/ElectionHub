@@ -45,7 +45,13 @@ const Register = () => {
             }
         } catch (err) {
             console.error('Register: Critical failure:', err);
-            toast.error(err.message || 'Registration failed. Please check your details.');
+            
+            // Specifically intercept the backend SMTP error thrown by Supabase when email limits are hit
+            if (err.message?.includes('Error sending confirmation email')) {
+                toast.error('Supabase Email Error: Email rate limit exceeded or SMTP misconfigured. Please check your Supabase Dashboard settings.', { duration: 6000 });
+            } else {
+                toast.error(err.message || 'Registration failed. Please check your details.');
+            }
         } finally {
             setLoading(false);
         }
