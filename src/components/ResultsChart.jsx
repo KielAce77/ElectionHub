@@ -5,14 +5,16 @@ import {
     BarElement,
     Title,
     Tooltip,
-    Legend
+    Legend,
+    ArcElement
 } from "chart.js";
-import { Bar } from "react-chartjs-2";
+import { Bar, Doughnut } from "react-chartjs-2";
 
 ChartJS.register(
     CategoryScale,
     LinearScale,
     BarElement,
+    ArcElement,
     Title,
     Tooltip,
     Legend
@@ -20,62 +22,79 @@ ChartJS.register(
 
 /**
  * ResultsChart component visualizations voting distributions.
- * It uses Chart.js to render a professional bar chart of candidates and their vote counts.
+ * Enhanced for maximum visibility and premium aesthetics.
  */
 const ResultsChart = ({ results }) => {
-    const data = {
+    const isMobile = window.innerWidth < 640;
+
+    const barData = {
         labels: results.map((item) => item.name),
         datasets: [
             {
-                label: "Votes Cast",
+                label: "Votes",
                 data: results.map((item) => item.votes),
                 backgroundColor: [
-                    "rgba(37, 99, 235, 0.85)",  // blue-600
-                    "rgba(79, 70, 229, 0.85)",  // indigo-600
-                    "rgba(16, 185, 129, 0.85)", // emerald-500
-                    "rgba(245, 158, 11, 0.85)", // amber-500
-                    "rgba(239, 68, 68, 0.85)",  // red-500
+                    "rgba(37, 99, 235, 0.8)",   // blue-600
+                    "rgba(99, 102, 241, 0.8)",  // indigo-500
+                    "rgba(16, 185, 129, 0.8)",  // emerald-500
+                    "rgba(245, 158, 11, 0.8)",  // amber-500
+                    "rgba(239, 68, 68, 0.8)",   // red-500
+                    "rgba(139, 92, 246, 0.8)",  // violet-500
                 ],
-                borderRadius: 12,
-                borderWidth: 0,
-                barThickness: 'flex',
-                maxBarThickness: 40,
-                hoverBackgroundColor: "rgba(37, 99, 235, 1)",
+                borderColor: [
+                    "rgb(37, 99, 235)",
+                    "rgb(99, 102, 241)",
+                    "rgb(16, 185, 129)",
+                    "rgb(245, 158, 11)",
+                    "rgb(239, 68, 68)",
+                    "rgb(139, 92, 246)",
+                ],
+                borderWidth: 2,
+                borderRadius: 8,
+                barThickness: isMobile ? 25 : 45,
+                hoverBackgroundColor: [
+                    "rgba(37, 99, 235, 1)",
+                    "rgba(99, 102, 241, 1)",
+                    "rgba(16, 185, 129, 1)",
+                    "rgba(245, 158, 11, 1)",
+                    "rgba(239, 68, 68, 1)",
+                    "rgba(139, 92, 246, 1)",
+                ],
             },
         ],
     };
 
-    const options = {
+    const barOptions = {
         responsive: true,
         maintainAspectRatio: false,
-        indexAxis: window.innerWidth < 640 ? 'y' : 'x', // Horizontal bars on mobile for better relaxation
+        indexAxis: isMobile ? 'y' : 'x',
         plugins: {
             legend: {
                 display: false,
             },
             tooltip: {
-                backgroundColor: "#0f172a",
+                backgroundColor: "rgba(15, 23, 42, 0.95)",
+                titleFont: { size: 13, weight: 'bold' },
+                bodyFont: { size: 12 },
                 padding: 12,
-                titleFont: { size: 14, weight: '900' },
-                bodyFont: { size: 13, weight: '600' },
-                displayColors: false,
-                callbacks: {
-                    label: (context) => ` Votes: ${context.parsed.y || context.parsed.x}`,
-                },
+                displayColors: true,
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
             },
         },
         scales: {
             x: {
                 grid: { display: false },
                 ticks: {
-                    font: { weight: '700', size: 10 },
-                    color: '#94a3b8',
+                    font: { weight: '800', size: 10 },
+                    color: '#64748b',
+                    padding: 10,
                 },
             },
             y: {
                 beginAtZero: true,
                 grid: {
-                    color: "rgba(241, 245, 249, 1)",
+                    color: "rgba(226, 232, 240, 0.5)",
                     drawBorder: false,
                 },
                 ticks: {
@@ -88,11 +107,38 @@ const ResultsChart = ({ results }) => {
     };
 
     return (
-        <div className="h-[300px] sm:h-[400px] w-full mobile-chart-relaxed">
-            <Bar data={data} options={options} />
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 h-auto w-full">
+            <div className="md:col-span-3 h-[300px] md:h-[400px]">
+                <Bar data={barData} options={barOptions} />
+            </div>
+            <div className="md:col-span-2 h-[250px] md:h-[350px] flex items-center justify-center p-4 bg-slate-50/50 rounded-3xl border border-slate-100">
+                <Doughnut
+                    data={barData}
+                    options={{
+                        ...barOptions,
+                        indexAxis: 'x',
+                        plugins: {
+                            ...barOptions.plugins,
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 8,
+                                    usePointStyle: true,
+                                    font: { size: 9, weight: '800' },
+                                    color: '#64748b'
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { display: false },
+                            y: { display: false }
+                        }
+                    }}
+                />
+            </div>
         </div>
     );
 };
-
 
 export default ResultsChart;

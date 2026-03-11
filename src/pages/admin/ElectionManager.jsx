@@ -622,11 +622,13 @@ const ElectionManager = () => {
                             disabled={election.tokens_generated}
                         />
                         <div className="flex flex-col justify-center bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-                            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1 flex items-center gap-2"><Shield className="w-3 h-3" /> Protocol Description</p>
+                            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1 flex items-center gap-2">
+                                <Shield className="w-3 h-3" /> Voter Capacity
+                            </p>
                             <p className="text-[10px] md:text-xs text-slate-500 leading-relaxed font-medium italic">
                                 {election.tokens_generated
-                                    ? "LOCKED"
-                                    : "Protocol details"}
+                                    ? "Expected voters is locked because tokens have already been issued."
+                                    : "Set how many unique voting codes you plan to distribute."}
                             </p>
                         </div>
                         <Input
@@ -647,7 +649,7 @@ const ElectionManager = () => {
                         />
                     </div>
                     <div className="space-y-3">
-                        <label className="block text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest">Protocol Description</label>
+                        <label className="block text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest">Election Description</label>
                         <textarea
                             className="w-full bg-white border border-slate-200 rounded-xl px-4 py-4 text-slate-900 text-sm md:text-base font-medium focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 transition-all min-h-[120px] md:min-h-[140px]"
                             placeholder="Briefly explain what this election is about..."

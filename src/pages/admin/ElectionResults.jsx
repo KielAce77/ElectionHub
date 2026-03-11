@@ -65,7 +65,7 @@ const CandidateRow = ({ rank, name, affiliation, votes, percentage, isWinner, ph
 
 const ElectionResults = () => {
   const { electionId } = useParams();
-  const { profile, user, loading: authLoading } = useAuth();
+  const { profile, user, signOut, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [election, setElection] = useState(null);
   const [positions, setPositions] = useState([]);
@@ -422,9 +422,9 @@ const ElectionResults = () => {
                 <Button variant="secondary" className="flex-1 font-bold" onClick={() => setShowLogoutModal(false)}>
                   Stay Logged In
                 </Button>
-                <Button className="flex-1 bg-red-600 hover:bg-red-700 font-bold text-white shadow-lg shadow-red-600/20" onClick={() => {
-                  signOut();
-                  navigate('/login');
+                <Button className="flex-1 bg-red-600 hover:bg-red-700 font-bold text-white shadow-lg shadow-red-600/20" onClick={async () => {
+                  await signOut();
+                  navigate('/login', { replace: true });
                 }}>
                   Sign Me Out
                 </Button>

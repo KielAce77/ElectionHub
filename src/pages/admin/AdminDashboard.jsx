@@ -158,34 +158,25 @@ const AdminDashboard = () => {
         labels: activityData.length > 0 ? activityData.map(d => d.date) : ['Initial'],
         datasets: [
             {
-                fill: true,
+                type: 'bar',
                 label: 'Ballots Cast',
                 data: activityData.length > 0 ? activityData.map(d => d.used) : [0],
-                borderColor: '#2563eb', // blue-600
-                backgroundColor: 'rgba(37, 99, 235, 0.08)',
-                tension: 0.4,
-                borderWidth: 3,
-                pointRadius: 5,
-                pointHoverRadius: 8,
-                pointBackgroundColor: '#2563eb',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
+                backgroundColor: 'rgba(37, 99, 235, 0.7)',
+                borderColor: '#2563eb',
+                borderWidth: 1,
+                borderRadius: 4,
                 yAxisID: 'y',
             },
             {
-                fill: false,
+                type: 'line',
                 label: 'Turnout %',
                 data: activityData.length > 0 ? activityData.map(d => Math.round(d.turnoutPct)) : [0],
-                borderColor: '#10b981', // emerald-500
+                borderColor: '#10b981',
                 backgroundColor: 'transparent',
                 tension: 0.4,
-                borderWidth: 3,
-                borderDash: [5, 5], // Dashed line for percentage
-                pointRadius: 4,
-                pointHoverRadius: 7,
-                pointBackgroundColor: '#10b981',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
+                borderWidth: 4,
+                pointRadius: 0, // No dots
+                pointHoverRadius: 6,
                 yAxisID: 'y1',
             },
         ],
@@ -205,8 +196,7 @@ const AdminDashboard = () => {
                 align: 'end',
                 labels: {
                     usePointStyle: true,
-                    pointStyle: 'circle',
-                    font: { size: 11, weight: '700' },
+                    font: { size: 11, weight: '800' },
                     padding: 20,
                     color: '#1e293b'
                 }
@@ -221,7 +211,7 @@ const AdminDashboard = () => {
                     label: (context) => {
                         let label = context.dataset.label || '';
                         if (label) label += ': ';
-                        if (context.datasetIndex === 1) {
+                        if (context.dataset.label === 'Turnout %') {
                             label += `${context.parsed.y}%`;
                         } else {
                             label += `${context.parsed.y} tokens`;
@@ -236,10 +226,9 @@ const AdminDashboard = () => {
                 beginAtZero: true,
                 title: {
                     display: true,
-                    text: 'BALLOTS REDEEMED',
+                    text: 'BALLOTS cast',
                     font: { size: 9, weight: '900' },
                     color: '#94a3b8',
-                    padding: { bottom: 10 }
                 },
                 grid: { color: '#f1f5f9' },
                 ticks: { stepSize: 1, color: '#64748b', font: { size: 10, weight: '600' } }
@@ -247,13 +236,6 @@ const AdminDashboard = () => {
             x: {
                 grid: { display: false },
                 ticks: { color: '#64748b', font: { size: 10, weight: '600' } },
-                title: {
-                    display: true,
-                    text: 'EVENT TIMELINE',
-                    font: { size: 9, weight: '900' },
-                    color: '#94a3b8',
-                    padding: { top: 10 }
-                }
             },
             y1: {
                 position: 'right',
@@ -261,10 +243,9 @@ const AdminDashboard = () => {
                 max: 100,
                 title: {
                     display: true,
-                    text: 'TURNOUT RATIO',
+                    text: 'TURNOUT %',
                     font: { size: 9, weight: '900' },
-                    color: '#94a3b8',
-                    padding: { bottom: 10 }
+                    color: '#10b981',
                 },
                 grid: { drawOnChartArea: false },
                 ticks: { color: '#059669', font: { size: 10, weight: '600' }, callback: (v) => `${v}%` },

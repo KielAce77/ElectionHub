@@ -19,12 +19,17 @@ const VoteEntry = () => {
 
         const { data, error } = await supabase
             .from('voting_tokens')
-            .select('id')
+            .select('id, is_used')
             .eq('token', normalizedToken)
             .maybeSingle();
 
         if (error || !data) {
-            toast.error('Invalid or already used voting token.');
+            toast.error('Invalid voting token.');
+            return;
+        }
+
+        if (data.is_used) {
+            toast.error('This voting token has already been used.');
             return;
         }
 
