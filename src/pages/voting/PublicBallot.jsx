@@ -100,15 +100,6 @@ const PublicBallot = () => {
 
             if (error) throw error;
 
-            // Safely mark the token as used in the registry to prevent redundant voting sessions.
-            await supabase
-                .from('voting_tokens')
-                .update({
-                    is_used: true,
-                    used_at: new Date().toISOString()
-                })
-                .eq('token', token);
-
             toast.success('Ballot digitized successfully. Session terminated.');
             navigate('/vote');
         } catch (err) {
@@ -322,7 +313,11 @@ const PublicBallot = () => {
                 <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8 opacity-40">
                     <div className="flex items-center gap-4">
                         <Logo className="w-6 h-6 grayscale" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Secure, Audited Election Environment</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Protected by Institutional Cryptography</span>
+                    </div>
+                    <div className="flex gap-8">
+                        <span className="text-[10px] font-black uppercase tracking-widest">Terms of Service</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Privacy Protocol</span>
                     </div>
                 </div>
             </footer>
